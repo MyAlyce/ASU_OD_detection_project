@@ -11,7 +11,6 @@ Page(
   BasePage({
     state: {},
     build() {
-
       hmUI.createWidget(hmUI.widget.BUTTON, {
         ...START_BUTTON,
         click_func: () => {
