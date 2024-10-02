@@ -1,11 +1,12 @@
 import { Time } from '@zos/sensor'
-import { BasePage } from "@zeppos/zml/base-page";
+// import { BaseSideService } from "@zeppos/zml/base-page";
+import { BaseSideService } from '@zeppos/zml/base-side';
 
 const timeSensor = new Time();
-const url = 'insert_ngrok_url_here/post'; // replace with your ngrok tunnel url
+const url = 'https://31c5-24-251-182-244.ngrok-free.app/post'; // replace with your ngrok tunnel url
 
 AppService(
-    BasePage({
+    BaseSideService({
         onInit() {
             this.log('app service onInit')
 
