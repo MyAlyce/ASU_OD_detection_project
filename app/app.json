@@ -12,7 +12,14 @@
 		"vender": "zepp",
 		"description": "MyAlyce app"
 	},
-	"permissions": ["device:os.bg_service"],
+	"permissions": [
+		"device:os.bg_service",
+		"data:user.hd.heart_rate",
+		"data:user.hd.sleep",
+		"data:user.info",
+		"data:os.device.info",
+		"device:os.notification"
+	],
 	"runtime": {
 		"apiVersion": {
 			"compatible": "3.0.0",
