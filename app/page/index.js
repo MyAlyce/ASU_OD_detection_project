@@ -3,6 +3,7 @@ import * as appService from "@zos/app-service";
 import { queryPermission, requestPermission } from "@zos/app";
 import hmUI from '@zos/ui';
 import { START_BUTTON } from 'zosLoader:./index.[pf].layout.js';
+import { STOP_BUTTON } from 'zosLoader:./index.[pf].layout.js';
 
 const permissions = ["device:os.bg_service"];
 const service = "app-service/service";
@@ -17,6 +18,17 @@ Page(
           console.log('fetch button clicked');
           if (checkPermissions()) {
             startAppService();
+          } else {
+            console.log('permission denied');
+          }
+        }
+      }),
+      hmUI.createWidget(hmUI.widget.BUTTON, {
+        ...STOP_BUTTON,
+        click_func: () => {
+          console.log('fetch button clicked');
+          if (checkPermissions()) {
+            stopsleepMonitor();
           } else {
             console.log('permission denied');
           }
@@ -46,6 +58,12 @@ const startAppService = () => {
       });
     }
   })
+}
+
+const stopsleepMonitor = () => {
+  hmUI.showToast({
+    text: `Sleep Data is no longer being monitored`
+  });
 }
 
 const checkPermissions = () => {

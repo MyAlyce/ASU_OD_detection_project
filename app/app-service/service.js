@@ -6,7 +6,7 @@ import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
 
 const timeSensor = new Time();
-const url = 'https://05ef-2607-fb91-8ea3-8d76-b168-66c6-5455-a13f.ngrok-free.app/post'; // replace with your ngrok tunnel url
+const url = 'https://2819-98-177-6-55.ngrok-free.app/post'; // replace with your ngrok tunnel url
 
 AppService(
     BasePage({
@@ -36,6 +36,7 @@ AppService(
                 sleepInfo: sleep.getInfo(),
                 sleepStageList: sleep.getStageConstantObj(),
                 sleepStatus: sleep.getSleepingStatus(),
+                testVar: "I am a test variable teehee",
             };
 
             this.httpRequest({

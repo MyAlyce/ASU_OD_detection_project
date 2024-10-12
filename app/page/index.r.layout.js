@@ -12,3 +12,15 @@ export const START_BUTTON = {
   press_color: PRESS_COLOR,
   text: BUTTON_TEXT
 };
+
+export const STOP_BUTTON = {
+  x: px(60),
+  y: px(100),
+  w: px(160),
+  h: px(80),
+  text_size: px(20),
+  radius: px(12),
+  normal_color: 18001003,
+  press_color: 18001113,
+  text: "SLEEP"
+}
