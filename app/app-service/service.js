@@ -4,18 +4,29 @@ import { BasePage } from "@zeppos/zml/base-page";
 import { HeartRate, Sleep } from "@zos/sensor";
 import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
+import { settingsLib } from "@zeppos/zml/base-side";
 
 const timeSensor = new Time();
-const url = 'insert_ngrok_url_here/post'; // replace with your ngrok tunnel url
+const url = 'https://0232-24-251-182-244.ngrok-free.app/post'; // replace with your ngrok tunnel url
 
 AppService(
     BasePage({
         onInit() {
-            this.log('app service onInit');
+            console.log('app service onInit');
+            console.log('The settings have');
+
+            this.request({ method: "GET_TOKEN" }).then((res) => {
+                console.log('[App Service] GET_TOKEN ==>', res);
+            }).catch((err) => {
+                console.log('GET_TOKEN errored', err);
+            });
 
             timeSensor.onPerMinute(() => {
                 this.log("app service running");
-                this.sendMetrics(); 
+                this.sendMetrics();
+                console.log(
+                    `Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes()}:${timeSensor.getSeconds()}`
+                )
             });
         },
         sendMetrics() {
