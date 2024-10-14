@@ -1,6 +1,11 @@
 import { GOOGLE_API_CLIENT_ID, GOOGLE_API_CLIENT_SECRET, GOOGLE_API_REDIRECT_URI } from "../google-api-constants";
 
-export const requestAccessToken = async (authResponse) => {
+/**
+ * Request Google Auth Data from Google API after receiving auth code 
+ * @param authResponse the auth code from Google API
+ * @returns access token and other data for using API
+ */
+export const requestGoogleAuthData = async (authResponse) => {
     const params = {
         grant_type: 'authorization_code',
         client_id: GOOGLE_API_CLIENT_ID,
@@ -13,7 +18,7 @@ export const requestAccessToken = async (authResponse) => {
         .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
         .join('&');
 
-    console.log(body)
+    // console.log(body)
     const data = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: {
@@ -21,8 +26,5 @@ export const requestAccessToken = async (authResponse) => {
         },
         body: body,
     })
-    console.log(data)
-    const dataJson = await data.json();
-    console.log(dataJson);
-    return dataJson;
+    return await data.json();
 }

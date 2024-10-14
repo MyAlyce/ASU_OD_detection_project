@@ -37,7 +37,7 @@ Page(
       console.log('getToken invoked');
       this.request({ method: "GET_TOKEN" })
         .then((res) => {
-          console.log('GET_TOKEN', res);
+          console.log('GET_TOKEN', JSON.stringify(res));
         }).catch((err) => {
           console.log('GET_TOKEN errored', err);
         });

@@ -15,15 +15,16 @@ AppService(
             console.log('app service onInit');
             console.log('The settings have');
 
-            this.request({ method: "GET_TOKEN" }).then((res) => {
-                console.log('[App Service] GET_TOKEN ==>', res);
-            }).catch((err) => {
-                console.log('GET_TOKEN errored', err);
-            });
 
             timeSensor.onPerMinute(() => {
                 this.log("app service running");
-                this.sendMetrics();
+                // this.sendMetrics();
+                this.request({ method: "GET_TOKEN" }).then((res) => {
+                    console.log('[App Service] GET_TOKEN ==>', JSON.stringify(res));
+                }).catch((err) => {
+                    console.log('GET_TOKEN errored', err);
+                });
+
                 console.log(
                     `Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes()}:${timeSensor.getSeconds()}`
                 )

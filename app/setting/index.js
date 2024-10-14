@@ -1,22 +1,20 @@
-import { requestAccessToken } from "../app-side/google-api"
+import { requestGoogleAuthData } from "../app-side/google-api"
 import { GOOGLE_API_CLIENT_ID, GOOGLE_API_CLIENT_SECRET, GOOGLE_API_REDIRECT_URI } from "../google-api-constants";
 
 AppSettingsPage({
     state: {
         props: {},
-        googleAuthToken: null,
+        googleAuthData: null,
     },
     setState(props) {
         this.state.props = props
-        console.log('props', props)
-        if (props.settingsStorage.getItem('googleAuthToken')) {
-            this.state.googleAuthToken = JSON.parse(props.settingsStorage.getItem('googleAuthToken'))
+        if (props.settingsStorage.getItem('googleAuthData')) {
+            this.state.googleAuthData = props.settingsStorage.getItem('googleAuthData')
         }
+        console.log('state:', this.state)
     },
     build(props) {
         this.setState(props)
-        console.log(props)
-        console.log('shi', this.state)
         const signInBtn = Button({
             label: this.state.googleAuthToken ? 'Sign Out' : 'Sign In',
             style: {
@@ -25,6 +23,21 @@ AppSettingsPage({
                 background: '#D85E33',
                 color: 'white'
             },
+        })
+
+        const clearBtn = Button({
+            label: 'Clear',
+            style: {
+                fontSize: '12px',
+                borderRadius: '30px',
+                background: '#D85E33',
+                color: 'white'
+            },
+            onClick: () => {
+                console.log('before clear', this.state.props.settingsStorage.toObject())
+                this.state.props.settingsStorage.clear()
+                console.log('after clear', this.state.props.settingsStorage.toObject())
+            }
         })
 
         const auth = Auth({
@@ -45,15 +58,24 @@ AppSettingsPage({
             onReturn: async (authBody) => {
                 console.log('onReturn', authBody)
                 this.state.props.settingsStorage.setItem('googleAuthCode', authBody.code)
-                const token = await requestAccessToken(authBody)
-                token.requested_at = new Date()
-                token.expires_at = new Date(token.requested_at.getTime() + token.expires_in * 1000)
-                this.state.props.settingsStorage.setItem('googleAuthToken', token)
-
-                console.log('token', this.state.googleAuthToken)
+                const authData = await requestGoogleAuthData(authBody)
+                authData.requested_at = new Date()
+                authData.expires_at = new Date(authData.requested_at.getTime() + authData.expires_in * 1000)
+                this.state.props.settingsStorage.setItem('googleAuthData', authData)
+                console.log('authData', this.state.googleAuthData)
             },
         })
 
-        return auth
+        return View(
+            {
+                style: {
+                    padding: '12px 20px'
+                }
+            },
+            [
+                auth,
+                clearBtn
+            ]
+        )
     }
 })

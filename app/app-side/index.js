@@ -19,7 +19,8 @@ AppSideService(
       if (req.method === "POST_TO_GOOGLE") {
         console.log('req.body', req.body)
       } else if (req.method === "GET_TOKEN") {
-        res(null, { token: settings.settingsStorage.getItem('googleAuthToken') })
+        settings.settingsStorage.setItem('hello', 'world')
+        res(null, { token: settings.settingsStorage.getItem('googleAuthData') })
       }
     }
   }),
