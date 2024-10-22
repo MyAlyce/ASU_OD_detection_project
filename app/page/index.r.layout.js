@@ -12,3 +12,15 @@ export const START_BUTTON = {
   press_color: PRESS_COLOR,
   text: BUTTON_TEXT
 };
+
+export const SLEEP_BUTTON = {
+  x: px(50),
+  y: px(225),
+  w: px(200),
+  h: px(50),
+  text_size: px(25),
+  radius: px(12),
+  normal_color: 0xaa42ee,
+  press_color: 0xb964f0,
+  text: "Sleep Data"
+};
