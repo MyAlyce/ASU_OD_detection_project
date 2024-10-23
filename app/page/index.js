@@ -5,19 +5,24 @@ import hmUI from '@zos/ui';
 import { START_BUTTON } from 'zosLoader:./index.[pf].layout.js';
 import { STOP_BUTTON } from 'zosLoader:./index.[pf].layout.js';
 
+
 const permissions = ["device:os.bg_service"];
 const service = "app-service/service";
+let serviceTog = true;
 
 Page(
   BasePage({
-    state: {},
+    state: {
+      serviceTog,
+    },
     build() {
       hmUI.createWidget(hmUI.widget.BUTTON, {
         ...START_BUTTON,
         click_func: () => {
           console.log('fetch button clicked');
           if (checkPermissions()) {
-            startAppService();
+            serviceTog = true;
+            startAppService(serviceTog);
           } else {
             console.log('permission denied');
           }
@@ -28,6 +33,7 @@ Page(
         click_func: () => {
           console.log('fetch button clicked');
           if (checkPermissions()) {
+            serviceTog = false;
             stopsleepMonitor();
           } else {
             console.log('permission denied');
@@ -46,11 +52,12 @@ Page(
   }),
 )
 
-const startAppService = () => {
+const startAppService = (serviceTog) => {
   console.log('startAppService invoked');
   console.log(`starting service: ${service}`);
   appService.start({
     url: service,
+    params: {serviceTog},
     complete_func: (info) => {
       console.log('service started complete_func:', JSON.stringify(info));
       hmUI.showToast({
@@ -64,6 +71,7 @@ const stopsleepMonitor = () => {
   hmUI.showToast({
     text: `Sleep Data is no longer being monitored`
   });
+  
 }
 
 const checkPermissions = () => {

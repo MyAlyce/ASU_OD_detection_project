@@ -14,7 +14,7 @@ export const START_BUTTON = {
 };
 
 export const STOP_BUTTON = {
-  x: px(60),
+  x: px(250),
   y: px(100),
   w: px(160),
   h: px(80),

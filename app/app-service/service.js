@@ -4,17 +4,27 @@ import { BasePage } from "@zeppos/zml/base-page";
 import { HeartRate, Sleep } from "@zos/sensor";
 import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
+let serviceTog = true;
+
 
 const timeSensor = new Time();
-const url = 'https://2819-98-177-6-55.ngrok-free.app/post'; // replace with your ngrok tunnel url
+const url = 'https://bbb6-98-177-6-55.ngrok-free.app/post'; // replace with your ngrok tunnel url
 
 AppService(
     BasePage({
         onInit() {
             this.log('app service onInit');
 
+            appService.on('start',(params) => {
+                if(params && params.serviceTog !== undefined){
+                    serviceTog = params.serviceTog;
+                    this.log(`ServiceTog: ${serviceTog}`);
+                }
+            });
+
             timeSensor.onPerMinute(() => {
                 this.log("app service running");
+                
                 this.sendMetrics(); 
             });
         },
@@ -36,7 +46,7 @@ AppService(
                 sleepInfo: sleep.getInfo(),
                 sleepStageList: sleep.getStageConstantObj(),
                 sleepStatus: sleep.getSleepingStatus(),
-                testVar: "I am a test variable teehee",
+                testVar: "I am a test variable teehee " + serviceTog
             };
 
             this.httpRequest({
