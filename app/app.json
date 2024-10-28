@@ -38,6 +38,9 @@
 				},
 				"app-service": {
 					"services": ["app-service/service"]
+				},
+				"setting": {
+					"path": "setting/index"
 				}
 			},
 			"platforms": [
