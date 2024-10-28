@@ -13,4 +13,3 @@ selenium-debug.log
 *.ntvs*
 *.njsproj
 *.sln
-app/google-api-constants.js

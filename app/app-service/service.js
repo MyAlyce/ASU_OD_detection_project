@@ -7,7 +7,7 @@ import { getDeviceInfo } from '@zos/device';
 import { settingsLib } from "@zeppos/zml/base-side";
 
 const timeSensor = new Time();
-const url = 'https://0232-24-251-182-244.ngrok-free.app/post'; // replace with your ngrok tunnel url
+const url = 'insert_ngrok_url_here/post'; // replace with your ngrok tunnel url
 
 AppService(
     BasePage({
