@@ -7,11 +7,15 @@ AppSettingsPage({
         googleAuthData: null,
     },
     setState(props) {
-        this.state.props = props
-        if (props.settingsStorage.getItem('googleAuthData')) {
-            this.state.googleAuthData = props.settingsStorage.getItem('googleAuthData')
+        this.state.props = props;
+        const storedAuthData = props.settingsStorage.getItem('googleAuthData');
+        if (storedAuthData) {
+            this.state.googleAuthData = storedAuthData;
         }
-        console.log('state:', this.state)
+        if (this.isTokenExpired()) {
+            this.state.googleAuthData = null;
+        }
+        console.log('state:', this.state);
     },
     build(props) {
         this.setState(props)
@@ -78,5 +82,14 @@ AppSettingsPage({
                 clearBtn
             ]
         )
-    }
+    },
+    isTokenExpired() {
+        const authData = this.state.googleAuthData;
+        if (!authData || !authData.expires_at) {
+            return true;
+        }
+        const now = new Date();
+        const expiresAt = new Date(authData.expires_at);
+        return now >= expiresAt;
+    },
 })
