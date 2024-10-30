@@ -16,7 +16,7 @@ AppSettingsPage({
     build(props) {
         this.setState(props)
         const signInBtn = Button({
-            label: this.state.googleAuthToken ? 'Sign Out' : 'Sign In',
+            label: this.state.googleAuthData ? 'Sign Out' : 'Sign In',
             style: {
                 fontSize: '12px',
                 borderRadius: '30px',
@@ -34,9 +34,10 @@ AppSettingsPage({
                 color: 'white'
             },
             onClick: () => {
-                console.log('before clear', this.state.props.settingsStorage.toObject())
-                this.state.props.settingsStorage.clear()
-                console.log('after clear', this.state.props.settingsStorage.toObject())
+                console.log('before clear', this.state.props.settingsStorage.toObject());
+                this.state.props.settingsStorage.clear();
+                this.state.googleAuthData = null;
+                console.log('after clear', this.state.props.settingsStorage.toObject());
             }
         })
 
@@ -44,7 +45,7 @@ AppSettingsPage({
             label: signInBtn,
             authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
             requestTokenUrl: 'https://oauth2.googleapis.com/token',
-            scope: 'https://www.googleapis.com/auth/spreadsheets',
+            scope: 'https://www.googleapis.com/auth/drive',
             clientId: GOOGLE_API_CLIENT_ID,
             clientSecret: GOOGLE_API_CLIENT_SECRET,
             oAuthParams: {
