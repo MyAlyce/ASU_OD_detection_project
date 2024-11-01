@@ -7,14 +7,18 @@ AppSettingsPage({
         googleAuthData: null,
     },
     setState(props) {
-        this.state.props = props
-        if (props.settingsStorage.getItem('googleAuthData')) {
-            this.state.googleAuthData = props.settingsStorage.getItem('googleAuthData')
+        this.state.props = props;
+        const storedAuthData = props.settingsStorage.getItem('googleAuthData');
+        if (storedAuthData) {
+            this.state.googleAuthData = storedAuthData;
         }
-        console.log('state:', this.state)
+        if (this.isTokenExpired()) {
+            this.state.googleAuthData = null;
+        }
+        console.log('state:', this.state);
     },
     build(props) {
-        this.setState(props)
+        this.setState(props);
         const signInBtn = Button({
             label: this.state.googleAuthData ? 'Sign Out' : 'Sign In',
             style: {
@@ -51,7 +55,9 @@ AppSettingsPage({
             oAuthParams: {
                 redirect_uri: GOOGLE_API_REDIRECT_URI,
                 response_type: 'code',
+                include_granted_scopes: 'true',
                 access_type: 'offline',
+                prompt: 'consent'
             },
             onAccessToken: (token) => {
                 console.log('onAccessToken', token)
@@ -78,5 +84,14 @@ AppSettingsPage({
                 clearBtn
             ]
         )
-    }
+    },
+    isTokenExpired() {
+        const authData = this.state.googleAuthData;
+        if (!authData || !authData.expires_at) {
+            return true;
+        }
+        const now = new Date();
+        const expiresAt = new Date(authData.expires_at);
+        return now >= expiresAt;
+    },
 })

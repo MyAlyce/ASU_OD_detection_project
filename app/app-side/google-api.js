@@ -28,3 +28,66 @@ export const requestGoogleAuthData = async (authResponse) => {
     })
     return await data.json();
 }
+
+/**
+ * Public-facing function to send data to Google Sheets
+ * 
+ * @param {*} accessToken access token from Google API
+ * @param {*} data data to send to Google Sheets, as an object
+ */
+export const sendDataToGoogleSheets = async (accessToken, data) => {
+    // TODO: spreadsheetId, location, isColumn should be decided in this function (probably not passed in)
+    const spreadsheetId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // Replace with actual spreadsheet ID
+    const location = 'Sheet1!A1'; // specify cell A1
+    const isColumn = false; // isColumn set to false for row data
+
+    try {
+        const response = await internalSendDataToGoogleSheets(
+            accessToken,
+            [[`hello world ${new Date().toISOString()}`]],
+            spreadsheetId,
+            location,
+            isColumn
+        );
+        if (response && response.updatedCells > 0) {
+            console.log('Successfully wrote to Google Sheets:', response);
+            return { success: true, data: response };
+        } else {
+            console.error('Failed to write to Google Sheets:', response);
+            return { success: false, data: response };
+        }
+    } catch (error) {
+        console.error('Error writing to Google Sheets:', error);
+        return { success: false, data: error };
+    }
+}
+
+/**
+ * Internal function to send data to Google Sheets
+ * Do not use directly
+ * @param {*} accessToken access token from Google API
+ * @param {*} values the data to send
+ * @param {*} spreadsheetId the ID of the Google Sheet
+ * @param {*} range the range of the data to send
+ * @param {*} isColumn if the data is a column or row
+ * @returns 
+ */
+const internalSendDataToGoogleSheets = async (accessToken, values, spreadsheetId, range, isColumn) => {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
+    const body = {
+        range: range,
+        majorDimension: isColumn ? 'COLUMNS' : 'ROWS',
+        values: values
+    };
+    const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    });
+    const responseData = await response.json();
+    console.log('Response from Google Sheets API:', responseData);
+    return responseData;
+};

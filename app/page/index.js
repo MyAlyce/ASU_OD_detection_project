@@ -6,6 +6,7 @@ import { START_BUTTON } from 'zosLoader:./index.[pf].layout.js';
 
 const permissions = ["device:os.bg_service"];
 const service = "app-service/service";
+const storage = getApp()._options.globalData.storage;
 
 Page(
   BasePage({
@@ -16,7 +17,6 @@ Page(
         click_func: () => {
           console.log('fetch button clicked');
           if (checkPermissions()) {
-            this.getToken();
             startAppService();
           } else {
             console.log('permission denied');
@@ -32,16 +32,6 @@ Page(
     onDestroy() {
       console.log('page onDestroy invoked');
     },
-
-    getToken() {
-      console.log('getToken invoked');
-      this.request({ method: "GET_TOKEN" })
-        .then((res) => {
-          console.log('GET_TOKEN', JSON.stringify(res));
-        }).catch((err) => {
-          console.log('GET_TOKEN errored', err);
-        });
-    }
   }),
 )
 
@@ -49,6 +39,7 @@ Page(
 const startAppService = () => {
   console.log('startAppService invoked');
   console.log(`starting service: ${service}`);
+  storage.setKey('googleAuthData', 'test123');
   appService.start({
     url: service,
     complete_func: (info) => {
