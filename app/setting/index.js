@@ -18,7 +18,7 @@ AppSettingsPage({
         console.log('state:', this.state);
     },
     build(props) {
-        this.setState(props)
+        this.setState(props);
         const signInBtn = Button({
             label: this.state.googleAuthData ? 'Sign Out' : 'Sign In',
             style: {
@@ -55,7 +55,9 @@ AppSettingsPage({
             oAuthParams: {
                 redirect_uri: GOOGLE_API_REDIRECT_URI,
                 response_type: 'code',
+                include_granted_scopes: 'true',
                 access_type: 'offline',
+                prompt: 'consent'
             },
             onAccessToken: (token) => {
                 console.log('onAccessToken', token)
