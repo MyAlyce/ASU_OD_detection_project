@@ -18,7 +18,8 @@
 		"data:user.hd.sleep",
 		"data:user.info",
 		"data:os.device.info",
-		"device:os.notification"
+		"device:os.notification",
+		"device:os.local_storage"
 	],
 	"runtime": {
 		"apiVersion": {

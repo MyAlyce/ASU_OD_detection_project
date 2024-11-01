@@ -4,7 +4,7 @@ import { BasePage } from "@zeppos/zml/base-page";
 import { HeartRate, Sleep } from "@zos/sensor";
 import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
-import { settingsLib } from "@zeppos/zml/base-side";
+import { sendDataToGoogleSheets } from '../app-side/google-api';
 
 const timeSensor = new Time();
 const url = 'insert_ngrok_url_here/post'; // replace with your ngrok tunnel url
@@ -14,33 +14,41 @@ const url = 'insert_ngrok_url_here/post'; // replace with your ngrok tunnel url
 AppService(
     BasePage({
         onInit() {
-            console.log('app service onInit');
-            console.log('The settings have');
-
-
+            this.log('app service onInit');
             timeSensor.onPerMinute(() => {
-                this.log("app service running");
-                // this.sendMetrics();
-                this.request({ method: "GET_TOKEN" }).then((res) => {
-                    console.log('[App Service] GET_TOKEN ==>', JSON.stringify(res));
+                this.log(
+                    `Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`
+                )
+
+                this.request({
+                    method: "POST_TO_GOOGLE",
+                    body: this.getMetrics()
+                }).then((res) => {
+                    this.log('[App Service] POST_TO_GOOGLE ==>', res);
                 }).catch((err) => {
-                    console.log('GET_TOKEN errored', err);
+                    this.log('POST_TO_GOOGLE errored', err);
                 });
 
-                console.log(
-                    `Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes()}:${timeSensor.getSeconds()}`
-                )
+                // If we need to instead use side-service:
+                // this.request({ method: "GET_TOKEN" }).then((res) => {
+                //     const token = res.token;
+                //     this.log('[App Service] GET_TOKEN ==>', res);
+                //     this.log('[App Service] token ==>', res.token);
+                //     this.sendToGoogleSheets(token);
+                // }).catch((err) => {
+                //     this.log('GET_TOKEN errored', err);
+                // });
+
             });
         },
-        sendMetrics() {
-            const startTime = new Date().getTime();
+        getMetrics() {
             const deviceInfo = getDeviceInfo();
             const heartRate = new HeartRate();
             const sleep = new Sleep();
 
             sleep.updateInfo();
 
-            const reqBody = {
+            return {
                 recordTime: Math.floor(new Date().getTime() / 1000),
                 user: getProfile(),
                 device: deviceInfo,
@@ -51,11 +59,12 @@ AppService(
                 sleepStageList: sleep.getStageConstantObj(),
                 sleepStatus: sleep.getSleepingStatus(),
             };
-
+        },
+        sendMetricsToServer() {
             this.httpRequest({
                 method: 'POST',
                 url: url,
-                body: JSON.stringify(reqBody),
+                body: JSON.stringify(this.getMetrics()),
                 headers: {
                     'Content-Type': 'application/json',
                 }
