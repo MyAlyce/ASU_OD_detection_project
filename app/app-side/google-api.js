@@ -41,10 +41,38 @@ export const sendDataToGoogleSheets = async (accessToken, data) => {
     const location = 'Sheet1!A1'; // specify cell A1
     const isColumn = false; // isColumn set to false for row data
 
+    // Format the data into headers and values
+    const headers = [
+        'Record Time',
+        'User ID',
+        'Device Info',
+        'Last Heart Rate',
+        'Resting Heart Rate',
+        'Daily Heart Rate Summary',
+        'Sleep Info',
+        'Sleep Stages',
+        'Sleep Status'
+    ];
+
+    const dataRow = [
+        new Date(data.recordTime * 1000).toISOString(),
+        JSON.stringify(data.user),
+        JSON.stringify(data.device),
+        data.heartRateLast,
+        data.heartRateResting,
+        JSON.stringify(data.heartRateSummary),
+        JSON.stringify(data.sleepInfo),
+        JSON.stringify(data.sleepStageList),
+        JSON.stringify(data.sleepStatus)
+    ];
+
+    // Combine headers and data
+    const formattedData = [headers, dataRow];
+
     try {
         const response = await internalSendDataToGoogleSheets(
             accessToken,
-            [[`hello world ${new Date().toISOString()}`]],
+            formattedData,
             spreadsheetId,
             location,
             isColumn
