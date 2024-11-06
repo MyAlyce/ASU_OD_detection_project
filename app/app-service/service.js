@@ -1,4 +1,5 @@
 import * as notificationMgr from "@zos/notification";
+import * as appServiceMgr from '@zos/app-service'
 import { Time } from '@zos/sensor';
 import { BasePage } from "@zeppos/zml/base-page";
 import { HeartRate, Sleep } from "@zos/sensor";
@@ -9,6 +10,25 @@ import { sendDataToGoogleSheets } from '../app-side/google-api';
 const timeSensor = new Time();
 const url = 'insert_ngrok_url_here/post'; // replace with your ngrok tunnel url
 
+function sendNotification() {
+    logger.log('send notification')
+    notificationMgr.notify({
+      title: "Time Service",
+      content: `Now the time is ${timeSensor.getHours()}:${timeSensor.getMinutes()}:${timeSensor.getSeconds()}`,
+      actions: [
+        {
+          text: "Home Page",
+          file: "pages/index",
+        },
+        {
+          text: "Stop Service",
+          file: "app-service/time_service",
+          param: "action=exit", //! processed in onEvent()
+        },
+      ],
+    });
+  }
+
 AppService(
     BasePage({
         onInit() {
@@ -17,7 +37,7 @@ AppService(
                 this.log(
                     `Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`
                 )
-
+                sendNotification();  
                 this.request({
                     method: "POST_TO_GOOGLE",
                     body: this.getMetrics()
