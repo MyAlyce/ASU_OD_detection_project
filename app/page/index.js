@@ -16,13 +16,39 @@ Page(
         ...START_BUTTON,
         click_func: () => {
           console.log('fetch button clicked');
-          if (checkPermissions()) {
-            startAppService();
-          } else {
-            console.log('permission denied');
+
+          //If the user is signed in, this will show up for barely a split second before a successful start message appears
+          hmUI.showToast({
+            text: 'Please sign in'
+          });
+
+            // Check token first
+          this.request({ method: "GET_TOKEN" })
+            .then((res) => {
+              if (!res || !res.token) {
+                hmUI.showToast({
+                  text: 'Please sign in'
+                });
+                return;
+              }
+      
+            this.log('Got token, checking permissions');
+
+            // Only proceed if got token
+            if (checkPermissions()) {
+              startAppService();
+            } else {
+                console.log('permission denied');
+                }
+              })
+          .catch((err) => {
+              this.log('GET_TOKEN error:', err);
+              })
+          .finally(() => {
+              this.log('Token check completed');
+              });
           }
-        }
-      })
+      });
     },
 
     onInit() {
@@ -42,6 +68,9 @@ const startAppService = () => {
   storage.setKey('googleAuthData', 'test123');
   appService.start({
     url: service,
+    params: JSON.stringify({
+      googleAuthData: "result from storage" // TODO make this pass in the actual token from above later
+    }),
     complete_func: (info) => {
       console.log('service started complete_func:', JSON.stringify(info));
       hmUI.showToast({
