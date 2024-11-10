@@ -38,12 +38,11 @@ Page(
             })
             .catch((err) => {
               this.log("GET_TOKEN error:", err);
-            })
+            });
         },
       });
     },
 
-    
     onInit() {
       console.log("page onInit invoked");
     },
