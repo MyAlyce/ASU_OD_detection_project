@@ -1,4 +1,4 @@
-import { requestGoogleAuthData } from "../app-side/google-api"
+import { requestGoogleAuthData } from "../app-service/google-api"
 import { GOOGLE_API_CLIENT_ID, GOOGLE_API_CLIENT_SECRET, GOOGLE_API_REDIRECT_URI } from "../google-api-constants";
 
 AppSettingsPage({

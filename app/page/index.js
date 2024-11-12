@@ -39,13 +39,12 @@ Page(
 const startAppService = () => {
   console.log('startAppService invoked');
   console.log(`starting service: ${service}`);
-  storage.setKey('googleAuthData', 'test123');
   appService.start({
     url: service,
     complete_func: (info) => {
       console.log('service started complete_func:', JSON.stringify(info));
       hmUI.showToast({
-        text: `service started: ${JSON.stringify(info)}`
+        text: info.result ? 'Service started' : 'Service failed to start',
       });
     }
   })

@@ -4,41 +4,22 @@ import { BasePage } from "@zeppos/zml/base-page";
 import { HeartRate, Sleep } from "@zos/sensor";
 import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
-import { sendDataToGoogleSheets } from '../app-side/google-api';
+import { sendDataToGoogleSheets } from './google-api';
 
 const timeSensor = new Time();
-const url = 'insert_ngrok_url_here/post'; // replace with your ngrok tunnel url
-
-// create new branch
 
 AppService(
     BasePage({
         onInit() {
-            this.log('app service onInit');
             timeSensor.onPerMinute(() => {
+                // if (timeSensor.getMinutes() % 5 != 0) {
+                //     return;
+                // }
                 this.log(
                     `Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`
                 )
 
-                this.request({
-                    method: "POST_TO_GOOGLE",
-                    body: this.getMetrics()
-                }).then((res) => {
-                    this.log('[App Service] POST_TO_GOOGLE ==>', res);
-                }).catch((err) => {
-                    this.log('POST_TO_GOOGLE errored', err);
-                });
-
-                // If we need to instead use side-service:
-                // this.request({ method: "GET_TOKEN" }).then((res) => {
-                //     const token = res.token;
-                //     this.log('[App Service] GET_TOKEN ==>', res);
-                //     this.log('[App Service] token ==>', res.token);
-                //     this.sendToGoogleSheets(token);
-                // }).catch((err) => {
-                //     this.log('GET_TOKEN errored', err);
-                // });
-
+                this.sendDataToGoogleSheets(token);
             });
         },
         getMetrics() {
@@ -60,27 +41,66 @@ AppService(
                 sleepStatus: sleep.getSleepingStatus(),
             };
         },
-        sendMetricsToServer() {
-            this.httpRequest({
-                method: 'POST',
-                url: url,
-                body: JSON.stringify(this.getMetrics()),
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            }).then(result => {
-                return result.json();
-            }).then(data => {
-                this.log(data);
-            }).catch(error => {
-                this.log(error);
-            });
-        },
         onRun() {
             this.log('app side service onRun');
         },
         onDestroy() {
             this.log('app side service onDestroy');
         },
+        sendDataToGoogleSheets(token) {
+            const data = this.getMetrics();
+            const headers = [
+                'Record Time',
+                'User ID',
+                'Device Info',
+                'Last Heart Rate',
+                'Resting Heart Rate',
+                'Daily Heart Rate Summary',
+                'Sleep Info',
+                'Sleep Stages',
+                'Sleep Status'
+            ];
+
+            const dataRow = [
+                new Date(data.recordTime * 1000).toISOString(),
+                JSON.stringify(data.user),
+                JSON.stringify(data.device),
+                data.heartRateLast,
+                data.heartRateResting,
+                JSON.stringify(data.heartRateSummary),
+                JSON.stringify(data.sleepInfo),
+                JSON.stringify(data.sleepStageList),
+                JSON.stringify(data.sleepStatus)
+            ];
+
+            const formattedData = [headers, dataRow];
+
+            const spreadsheetId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // Replace with actual spreadsheet ID
+            const range = 'Sheet1!A1'; // specify cell A1
+
+            const body = {
+                range,
+                values: formattedData,
+                majorDimension: 'COLUMNS',
+            };
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
+
+            this.httpRequest({
+                method: 'PUT',
+                url,
+                body: JSON.stringify(body),
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                }
+            }).then(response => response.json())
+                .then(responseData => {
+                    console.log('Response from Google Sheets API:', responseData);
+                    return responseData;
+                }).catch(error => {
+                    console.error('Error from Google Sheets API:', error);
+                    throw error;
+                });
+        }
     })
 );

@@ -35,12 +35,7 @@ export const requestGoogleAuthData = async (authResponse) => {
  * @param {*} accessToken access token from Google API
  * @param {*} data data to send to Google Sheets, as an object
  */
-export const sendDataToGoogleSheets = async (accessToken, data) => {
-    // TODO: spreadsheetId, location, isColumn should be decided in this function (probably not passed in)
-    const spreadsheetId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // Replace with actual spreadsheet ID
-    const location = 'Sheet1!A1'; // specify cell A1
-    const isColumn = false; // isColumn set to false for row data
-
+export const sendDataToGoogleSheets = (svc, accessToken, data) => {
     // Format the data into headers and values
     const headers = [
         'Record Time',
@@ -69,14 +64,11 @@ export const sendDataToGoogleSheets = async (accessToken, data) => {
     // Combine headers and data
     const formattedData = [headers, dataRow];
 
-    try {
-        const response = await internalSendDataToGoogleSheets(
-            accessToken,
-            formattedData,
-            spreadsheetId,
-            location,
-            isColumn
-        );
+    internalSendDataToGoogleSheets(
+        svc,
+        accessToken,
+        formattedData,
+    ).then(response => {
         if (response && response.updatedCells > 0) {
             console.log('Successfully wrote to Google Sheets:', response);
             return { success: true, data: response };
@@ -84,10 +76,10 @@ export const sendDataToGoogleSheets = async (accessToken, data) => {
             console.error('Failed to write to Google Sheets:', response);
             return { success: false, data: response };
         }
-    } catch (error) {
+    }).catch(error => {
         console.error('Error writing to Google Sheets:', error);
         return { success: false, data: error };
-    }
+    });
 }
 
 /**
@@ -95,27 +87,44 @@ export const sendDataToGoogleSheets = async (accessToken, data) => {
  * Do not use directly
  * @param {*} accessToken access token from Google API
  * @param {*} values the data to send
- * @param {*} spreadsheetId the ID of the Google Sheet
- * @param {*} range the range of the data to send
- * @param {*} isColumn if the data is a column or row
  * @returns 
  */
-const internalSendDataToGoogleSheets = async (accessToken, values, spreadsheetId, range, isColumn) => {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
+const internalSendDataToGoogleSheets = async (svc, accessToken, values) => {
+    // TODO: spreadsheetId, location, isColumn should be decided in this function (probably not passed in)
+    const spreadsheetId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // Replace with actual spreadsheet ID
+    const range = 'Sheet1!A1'; // specify cell A1
+    const isColumn = false; // isColumn set to false for row data
+
     const body = {
-        range: range,
+        range,
+        values,
         majorDimension: isColumn ? 'COLUMNS' : 'ROWS',
-        values: values
     };
-    const response = await fetch(url, {
-        method: 'PUT',
+
+    // const response = await fetch(url, {
+    //     method: 'PUT',
+    //     headers: {
+    //         'Authorization': `Bearer ${accessToken}`,
+    //         'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(body),
+    // });
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
+    // const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+    svc.httpRequest({
+        method: 'POST',
+        url,
+        body: JSON.stringify(body),
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-    });
-    const responseData = await response.json();
-    console.log('Response from Google Sheets API:', responseData);
-    return responseData;
+        }
+    }).then(response => response.json())
+        .then(responseData => {
+            console.log('Response from Google Sheets API:', responseData);
+            return responseData;
+        }).catch(error => {
+            console.error('Error from Google Sheets API:', error);
+            throw error;
+        });
 };
