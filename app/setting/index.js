@@ -19,6 +19,10 @@ AppSettingsPage({
     },
     build(props) {
         this.setState(props);
+
+        const nowTag = (new Date()).toISOString().substring(0, 19);
+        if (props.settingsStorage.getItem("now") !== nowTag) props.settingsStorage.setItem("now", nowTag);
+
         const signInBtn = Button({
             label: this.state.googleAuthData ? 'Sign Out' : 'Sign In',
             style: {

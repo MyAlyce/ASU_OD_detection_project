@@ -3,6 +3,7 @@ import * as appService from "@zos/app-service";
 import { queryPermission, requestPermission } from "@zos/app";
 import hmUI from "@zos/ui";
 import { START_BUTTON } from "zosLoader:./index.[pf].layout.js";
+import { STOP_BUTTON } from "./index.r.layout";
 
 const permissions = ["device:os.bg_service"];
 const service = "app-service/service";
@@ -20,18 +21,21 @@ Page(
           // Check token first
           this.request({ method: "GET_TOKEN" })
             .then((res) => {
+              console.log("Res:::", JSON.stringify(res));
               if (!res || !res.token) {
                 hmUI.showToast({
                   text: "Please sign in",
                 });
+                console.log("No token found, user needs to sign in");
                 return;
               }
 
-              this.log("Got token, checking permissions");
+              console.log("Got token, checking permissions");
+              storage.setKey("token", res.token);
 
               // Only proceed if got token
               if (checkPermissions()) {
-                startAppService();
+                startAppService(res.token);
               } else {
                 console.log("permission denied");
               }
@@ -41,6 +45,23 @@ Page(
             });
         },
       });
+
+      hmUI.createWidget(hmUI.widget.BUTTON, {
+        ...STOP_BUTTON,
+        click_func: () => {
+          console.log("stop button clicked");
+          appService.stop({
+            file: service,
+            complete_func: (info) => {
+              console.log("service stopped complete_func:", JSON.stringify(info));
+              hmUI.showToast({
+                text: info.result ? "Service stopped" : "Service failed to stop",
+              });
+            },
+          });
+        },
+      },
+      )
     },
 
     onInit() {
@@ -53,18 +74,16 @@ Page(
   })
 );
 
-const startAppService = () => {
+const startAppService = (token) => {
   console.log("startAppService invoked");
   console.log(`starting service: ${service}`);
   appService.start({
-    url: service,
-    params: JSON.stringify({
-      googleAuthData: "result from storage", // TODO make this pass in the actual token from above later
-    }),
+    file: service,
+    param: JSON.stringify({ token }),
     complete_func: (info) => {
       console.log("service started complete_func:", JSON.stringify(info));
       hmUI.showToast({
-        text: info.result ? 'Service started' : 'Service failed to start',
+        text: info.result ? 'Service started' + token : 'Service failed to start',
       });
     },
   });

@@ -4,21 +4,23 @@ import { BasePage } from "@zeppos/zml/base-page";
 import { HeartRate, Sleep } from "@zos/sensor";
 import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
-import { sendDataToGoogleSheets } from './google-api';
 
 const timeSensor = new Time();
+const storage = getApp()._options.globalData.storage;
 
 AppService(
     BasePage({
-        onInit() {
+        onInit(param) {
+            this.log('storage exists?', !!storage)
+            const token = storage.getKey('token');
+            this.log('token', token);
+
             timeSensor.onPerMinute(() => {
-                // if (timeSensor.getMinutes() % 5 != 0) {
-                //     return;
-                // }
                 this.log(
                     `Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`
                 )
-
+                this.log('param', param)
+                this.log('token', token)
                 this.sendDataToGoogleSheets(token);
             });
         },
@@ -48,6 +50,11 @@ AppService(
             this.log('app side service onDestroy');
         },
         sendDataToGoogleSheets(token) {
+            if (!token) {
+                this.log('No token provided');
+                return;
+            }
+
             const data = this.getMetrics();
             const headers = [
                 'Record Time',
@@ -81,7 +88,7 @@ AppService(
             const body = {
                 range,
                 values: formattedData,
-                majorDimension: 'COLUMNS',
+                majorDimension: 'ROWS',
             };
             const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
 
