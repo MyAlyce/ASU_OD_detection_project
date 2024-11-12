@@ -24,8 +24,8 @@ AppSideService(
         //   res(null, { status: 'error', data: response.data });
         // }
       } else if (req.method === "GET_TOKEN") {
-        res(null, { token: settings.settingsStorage.getItem('googleAuthData').access_token })
-      }
+        res(null, { token: settings.settingsStorage.getItem('googleAuthData')?.access_token });
+      } 
     }
   }),
 )
