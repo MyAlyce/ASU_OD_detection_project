@@ -1,4 +1,4 @@
-import { requestGoogleAuthData } from "../app-side/google-api"
+import { requestGoogleAuthData } from "../app-service/google-api"
 import { GOOGLE_API_CLIENT_ID, GOOGLE_API_CLIENT_SECRET, GOOGLE_API_REDIRECT_URI } from "../google-api-constants";
 
 AppSettingsPage({
@@ -7,20 +7,25 @@ AppSettingsPage({
         googleAuthData: null,
     },
     setState(props) {
+        console.log('setState', props);
         this.state.props = props;
-        const storedAuthData = props.settingsStorage.getItem('googleAuthData');
+        const storedAuthData = JSON.parse(props.settingsStorage.getItem('googleAuthData'));
         if (storedAuthData) {
             this.state.googleAuthData = storedAuthData;
         }
-        if (this.isTokenExpired()) {
+        if (this.isTokenExpired() || !this.state.googleAuthData) {
             this.state.googleAuthData = null;
         }
         console.log('state:', this.state);
     },
     build(props) {
         this.setState(props);
+
+        const nowTag = (new Date()).toISOString().substring(0, 19);
+        if (props.settingsStorage.getItem("now") !== nowTag) props.settingsStorage.setItem("now", nowTag);
+
         const signInBtn = Button({
-            label: this.state.googleAuthData ? 'Sign Out' : 'Sign In',
+            label: this.state.googleAuthData ? 'Sign Out' : 'Sign In', // fix
             style: {
                 fontSize: '12px',
                 borderRadius: '30px',
@@ -39,8 +44,10 @@ AppSettingsPage({
             },
             onClick: () => {
                 console.log('before clear', this.state.props.settingsStorage.toObject());
-                this.state.props.settingsStorage.clear();
-                this.state.googleAuthData = null;
+                // this.state.props.settingsStorage.clear();
+                props.settingsStorage.setItem("googleAuthData", null);
+                props.settingsStorage.setItem("googleAuthCode", null);
+                this.state.googleAuthData = "";
                 console.log('after clear', this.state.props.settingsStorage.toObject());
             }
         })
@@ -64,11 +71,11 @@ AppSettingsPage({
             },
             onReturn: async (authBody) => {
                 console.log('onReturn', authBody)
-                this.state.props.settingsStorage.setItem('googleAuthCode', authBody.code)
+                // this.state.props.settingsStorage.setItem('googleAuthCode', authBody.code)
                 const authData = await requestGoogleAuthData(authBody)
                 authData.requested_at = new Date()
                 authData.expires_at = new Date(authData.requested_at.getTime() + authData.expires_in * 1000)
-                this.state.props.settingsStorage.setItem('googleAuthData', authData)
+                this.state.props.settingsStorage.setItem('googleAuthData', JSON.stringify(authData))
                 console.log('authData', this.state.googleAuthData)
             },
         })
