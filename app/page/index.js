@@ -23,7 +23,10 @@ Page(
           text: "token: " + res
         })
         storage.setKey("token", res);
-      }).catch((err) => {
+      }).catch(err => {
+        hmUI.showToast({
+          text: "Error getting token on load (not signed in?)"
+        });
         console.error("error getting token", err);
       });
     },

@@ -32,7 +32,7 @@ AppSideService(
           method: "SET_TOKEN",
           params: {
             key: 'googleAuthData',
-            value: newValue
+            value: JSON.parse(newValue).access_token
           }
         })
       }

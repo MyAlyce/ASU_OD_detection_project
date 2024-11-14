@@ -37,6 +37,9 @@ export const requestGoogleAuthData = async (authResponse) => {
  */
 export const sendDataToGoogleSheets = (svc, accessToken, data) => {
     // Format the data into headers and values
+
+    // TODO: headers should be decided in internal function too
+    // i.e. only add headers if creating new file (not appending to an existing one)
     const headers = [
         'Record Time',
         'User ID',
@@ -64,22 +67,17 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
     // Combine headers and data
     const formattedData = [headers, dataRow];
 
-    internalSendDataToGoogleSheets(
+    return internalSendDataToGoogleSheets(
         svc,
         accessToken,
         formattedData,
-    ).then(response => {
-        if (response && response.updatedCells > 0) {
-            console.log('Successfully wrote to Google Sheets:', response);
-            return { success: true, data: response };
-        } else {
-            console.error('Failed to write to Google Sheets:', response);
-            return { success: false, data: response };
+    ).then(({ status, body }) => {
+        if (status == 200 && body?.updatedCells > 0) {
+            console.log('Successfully wrote to Google Sheets:', body);
+            return { message: `Successfully wrote ${body.updatedCells} cells.` };
         }
-    }).catch(error => {
-        console.error('Error writing to Google Sheets:', error);
-        return { success: false, data: error };
-    });
+        return Promise.reject({ message: 'Failed to write to Google Sheets', error: body });
+    })
 }
 
 /**
@@ -89,42 +87,32 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
  * @param {*} values the data to send
  * @returns 
  */
-const internalSendDataToGoogleSheets = async (svc, accessToken, values) => {
+const internalSendDataToGoogleSheets = (svc, accessToken, values) => {
     // TODO: spreadsheetId, location, isColumn should be decided in this function (probably not passed in)
+    // append vs new sheet 
     const spreadsheetId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // Replace with actual spreadsheet ID
     const range = 'Sheet1!A1'; // specify cell A1
-    const isColumn = false; // isColumn set to false for row data
 
     const body = {
         range,
         values,
-        majorDimension: isColumn ? 'COLUMNS' : 'ROWS',
+        majorDimension: 'ROWS',
     };
 
-    // const response = await fetch(url, {
-    //     method: 'PUT',
-    //     headers: {
-    //         'Authorization': `Bearer ${accessToken}`,
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify(body),
-    // });
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
     // const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
-    svc.httpRequest({
-        method: 'POST',
+    return svc.httpRequest({
+        method: 'PUT',
         url,
         body: JSON.stringify(body),
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
         }
-    }).then(response => response.json())
-        .then(responseData => {
-            console.log('Response from Google Sheets API:', responseData);
-            return responseData;
-        }).catch(error => {
-            console.error('Error from Google Sheets API:', error);
-            throw error;
-        });
+    }).then(({ status, statusText, headers, body }) => {
+        if (typeof body === 'string') {
+            body = JSON.parse(body);
+        }
+        return { status, body };
+    })
 };

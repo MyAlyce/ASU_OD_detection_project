@@ -25,7 +25,7 @@ AppSettingsPage({
         if (props.settingsStorage.getItem("now") !== nowTag) props.settingsStorage.setItem("now", nowTag);
 
         const signInBtn = Button({
-            label: this.state.googleAuthData ? this.state.googleAuthData.access_token : 'Sign In', // fix
+            label: this.state.googleAuthData ? 'Sign Out' : 'Sign In', // fix
             style: {
                 fontSize: '12px',
                 borderRadius: '30px',
