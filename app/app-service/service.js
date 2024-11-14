@@ -4,24 +4,35 @@ import { BasePage } from "@zeppos/zml/base-page";
 import { HeartRate, Sleep } from "@zos/sensor";
 import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
+import hmUI from "@zos/ui";
 
 const timeSensor = new Time();
 const storage = getApp()._options.globalData.storage;
 
 AppService(
     BasePage({
-        onInit(param) {
+        onInit() {
             this.log('storage exists?', !!storage)
             const token = storage.getKey('token');
             this.log('token', token);
-
+            hmUI.showToast({
+                text: "starting with token " + token
+            });
             timeSensor.onPerMinute(() => {
                 this.log(
                     `Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`
                 )
-                this.log('param', param)
                 this.log('token', token)
-                this.sendDataToGoogleSheets(token);
+
+                this.sendDataToGoogleSheets(token).then(() => {
+                    this.log('Successfully wrote to Google Sheets');
+                    notificationMgr.notify({
+                        title: "Google sheets",
+                        content: "sent data successfully"
+                    })
+                }).catch(error => {
+                    this.log('Failed to write to Google Sheets', error);
+                });
             });
         },
         getMetrics() {

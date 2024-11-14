@@ -1,4 +1,4 @@
-import { BaseSideService } from "@zeppos/zml/base-side";
+import { BaseSideService, settingsLib } from "@zeppos/zml/base-side";
 
 AppSideService(
   BaseSideService({
@@ -10,23 +10,32 @@ AppSideService(
 
     onDestroy() { },
 
-    async onRequest(req, res) {
+    onRequest(req, res) {
       console.log(`Method ==> ${req.method}`)
       if (req.method === "POST_TO_GOOGLE") {
         console.log('req.body', req.body)
-        // const accessToken = settings.settingsStorage.getItem('googleAuthData').access_token;
-        // const response = await sendDataToGoogleSheets(accessToken, req.body);
-        // if (response.success) {
-        //   console.log('Successfully wrote to Google Sheets');
-        //   res(null, { status: 'success' });
-        // } else {
-        //   console.error('Failed to write to Google Sheets');
-        //   res(null, { status: 'error', data: response.data });
-        // }
       } else if (req.method === "GET_TOKEN") {
-        //settings.settingsStorage.getItem('googleAuthData')?.access_token
-        res(null, { token: settings.settingsStorage.getItem('googleAuthData')?.access_token });
+        const token = settingsLib.getItem('googleAuthData') ? JSON.parse(settingsLib.getItem('googleAuthData')).access_token : undefined;
+        if (token) {
+          res(null, token);
+        } else {
+          res("No token found");
+        }
       }
-    }
+    },
+    onSettingsChange({ key, newValue, oldValue }) {
+      console.log('onSettingsChange', key, newValue, oldValue);
+      console.log(settingsLib.getAll());
+      if (key === 'googleAuthData') {
+        console.log('googleAuthData changed');
+        this.call({
+          method: "SET_TOKEN",
+          params: {
+            key: 'googleAuthData',
+            value: newValue
+          }
+        })
+      }
+    },
   }),
 )
