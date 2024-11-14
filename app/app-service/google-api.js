@@ -42,26 +42,51 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
     // i.e. only add headers if creating new file (not appending to an existing one)
     const headers = [
         'Record Time',
-        'User ID',
-        'Device Info',
         'Last Heart Rate',
         'Resting Heart Rate',
-        'Daily Heart Rate Summary',
-        'Sleep Info',
-        'Sleep Stages',
-        'Sleep Status'
+        // Daily Heart Rate broken down
+        'Daily Heart Rate Maximum',
+        'Daily Heart Rate Time',
+        'Daily Heart Rate Time Zone',
+        'Daily Heart Rate Value',
+        // Sleep Info broken down
+        'Sleep Score',
+        'Sleep Start Time',
+        'Sleep End Time',
+        'Sleep Deep Time',
+        'Sleep Total Time',
+        // Sleep Stages broken down
+        'Sleep Wake Stage',
+        'Sleep REM Stage',
+        'Sleep Light Stage',
+        'Sleep Deep Stage',
     ];
+
+    // Parse the more complex objects
+    const heartRateSummary = data.heartRateSummary || {};
+    const sleepInfo = data.sleepInfo || {};
+    const sleepStages = data.sleepStageList || {};
 
     const dataRow = [
         new Date(data.recordTime * 1000).toISOString(),
-        JSON.stringify(data.user),
-        JSON.stringify(data.device),
         data.heartRateLast,
         data.heartRateResting,
-        JSON.stringify(data.heartRateSummary),
-        JSON.stringify(data.sleepInfo),
-        JSON.stringify(data.sleepStageList),
-        JSON.stringify(data.sleepStatus)
+        // Daily Heart Rate data
+        heartRateSummary.maximum?.maximum || 0,
+        heartRateSummary.maximum?.time || 0,
+        heartRateSummary.maximum?.time_zone || 0,
+        heartRateSummary.maximum?.hr_value || 0,
+        // Sleep Info data
+        sleepInfo.score || 0,
+        sleepInfo.startTime || 0,
+        sleepInfo.endTime || -1,
+        sleepInfo.deepTime || 0,
+        sleepInfo.totalTime || 0,
+        // Sleep Stages data
+        sleepStages.WAKE_STAGE || 0,
+        sleepStages.REM_STAGE || 0,
+        sleepStages.LIGHT_STAGE || 0,
+        sleepStages.DEEP_STAGE || 0,
     ];
 
     // Combine headers and data
