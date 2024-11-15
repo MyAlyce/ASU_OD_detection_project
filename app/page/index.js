@@ -5,6 +5,7 @@ import hmUI from "@zos/ui";
 import { START_BUTTON } from "zosLoader:./index.[pf].layout.js";
 import { STOP_BUTTON } from "./index.r.layout";
 import { HEART_BUTTON } from "./index.r.layout";
+import { HeartRate, Sleep, Time } from "@zos/sensor";
 import { log } from "@zos/utils";
 
 const permissions = ["device:os.bg_service"];
@@ -14,10 +15,12 @@ const { messageBuilder } = getApp()._options.globalData
 const logger = log.getLogger('demo');
 let data;
 
+
 Page(
   BasePage({
     state: {
       temp: null,
+      sleepData: null,
     },
     onInit() {
       console.log("page onInit invoked");
@@ -81,7 +84,12 @@ Page(
         ...HEART_BUTTON,
         click_func: () => {
           console.log("heart button clicked");
-          this.onMessage();
+          this.state.sleepData = new HeartRate();
+          const s_info = `The heartrate is ${this.state.sleepData.getLast()}`;
+          hmUI.showToast({
+            text: s_info,
+          });
+          console.log(s_info);
         },
       });
       
@@ -123,12 +131,10 @@ Page(
 
     onMessage(){
       //side services send a signal here (call)
-      console.log('clicked');
       messageBuilder.on('call', ({ payload: buf}) =>{
         //converts buffer to json
         data = messageBuilder.buf2Json(buf);
         logger.log('data',data);
-        
       })
     }
   })
