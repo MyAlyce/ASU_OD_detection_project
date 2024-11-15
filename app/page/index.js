@@ -2,6 +2,7 @@ import { BasePage } from "@zeppos/zml/base-page";
 import * as appService from "@zos/app-service";
 import { queryPermission, requestPermission } from "@zos/app";
 import hmUI from "@zos/ui";
+import { createWidget, widget, align, prop, text_style, event } from '@zos/ui'
 import { START_BUTTON } from "zosLoader:./index.[pf].layout.js";
 import { STOP_BUTTON } from "./index.r.layout";
 import { HEART_BUTTON } from "./index.r.layout";
@@ -85,10 +86,20 @@ Page(
         click_func: () => {
           console.log("heart button clicked");
           this.state.sleepData = new HeartRate();
-          const s_info = `The heartrate is ${this.state.sleepData.getLast()}`;
-          hmUI.showToast({
+          const s_info = `Heartrate: ${this.state.sleepData.getLast()}`;
+          const text = createWidget(widget.TEXT, {
+            x: 200,
+            y: 100,
+            w: 200,
+            h: 106,
+            text_style: text_style.WRAP,
+            color: 0xffffff,
+            text_size: 36,
+            align_h: align.CENTER_H,
+            align_v: align.CENTER_V,
+            text_style: text_style.NONE,
             text: s_info,
-          });
+          })
           console.log(s_info);
         },
       });
