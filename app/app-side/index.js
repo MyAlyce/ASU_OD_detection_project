@@ -1,9 +1,28 @@
 import { BaseSideService, settingsLib } from "@zeppos/zml/base-side";
+import { MessageBuilder } from '../shared/message-side';
+
+const messageBuilder = new MessageBuilder();
 
 AppSideService(
   BaseSideService({
     onInit() {
       console.log('app side service invoke onInit');
+      messageBuilder.listen(() => {});
+
+      //send message to the device app
+      messageBuilder.call({text:'Hello Zepp you sexy little bastard'});
+
+      //and receive message
+      messageBuilder.on('request', (ctx) => {
+        const payload = messageBuilder.buf2Json(ctx.request.payload);
+        const { method, params } = payload;
+
+        if(method === 'GET'){
+          ctx.response({
+            data: {result : 0}
+          })
+        }
+      })
     },
 
     onRun() { },

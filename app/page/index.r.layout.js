@@ -24,3 +24,15 @@ export const STOP_BUTTON = {
   press_color: PRESS_COLOR,
   text: BUTTON_TEXT_STOP
 };
+
+export const HEART_BUTTON = {
+  x: px(60),
+  y: px(100),
+  w: px(160),
+  h: px(80),
+  text_size: px(36),
+  radius: px(12),
+  normal_color: 19312082,
+  press_color: 10919082,
+  text: "love"
+};

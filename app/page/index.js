@@ -4,10 +4,15 @@ import { queryPermission, requestPermission } from "@zos/app";
 import hmUI from "@zos/ui";
 import { START_BUTTON } from "zosLoader:./index.[pf].layout.js";
 import { STOP_BUTTON } from "./index.r.layout";
+import { HEART_BUTTON } from "./index.r.layout";
+import { log } from "@zos/utils";
 
 const permissions = ["device:os.bg_service"];
 const service = "app-service/service";
 const storage = getApp()._options.globalData.storage;
+const { messageBuilder } = getApp()._options.globalData
+const logger = log.getLogger('demo');
+let data;
 
 Page(
   BasePage({
@@ -29,6 +34,7 @@ Page(
         });
         console.error("error getting token", err);
       });
+      this.onMessage();
     },
 
     build() {
@@ -36,6 +42,7 @@ Page(
         ...START_BUTTON,
         click_func: () => {
           console.log("fetch button clicked");
+          
           const token = storage.getKey("token");
           if (!token) {
             hmUI.showToast({
@@ -69,6 +76,27 @@ Page(
           });
         },
       });
+
+      hmUI.createWidget(hmUI.widget.BUTTON, {
+        ...HEART_BUTTON,
+        click_func: () => {
+          console.log("heart button clicked");
+          this.onMessage();
+        },
+      });
+      
+      //sends a message to the side service
+      messageBuilder.request({
+        method:'GET',
+        params:{
+          index: 0
+        }
+      }).then(data =>{
+        const {result} = data
+        logger.log(result)
+      })
+
+      //
     },
 
     onDestroy() {
@@ -91,6 +119,17 @@ Page(
         });
         storage.setKey("token", req.params.value);
       }
+    },
+
+    onMessage(){
+      //side services send a signal here (call)
+      console.log('clicked');
+      messageBuilder.on('call', ({ payload: buf}) =>{
+        //converts buffer to json
+        data = messageBuilder.buf2Json(buf);
+        logger.log('data',data);
+        
+      })
     }
   })
 );
@@ -98,6 +137,7 @@ Page(
 const startAppService = (token) => {
   console.log("startAppService invoked");
   console.log(`starting service: ${service}`);
+  
   appService.start({
     file: service,
     complete_func: (info) => {
@@ -129,3 +169,8 @@ const checkPermissions = () => {
   }
   return false;
 };
+
+const message = () => {
+  this.onMessage();
+  return true;
+}
