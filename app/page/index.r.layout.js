@@ -29,10 +29,22 @@ export const HEART_BUTTON = {
   x: px(60),
   y: px(100),
   w: px(160),
-  h: px(80),
+  h: px(40),
   text_size: px(36),
   radius: px(12),
   normal_color: 19312082,
   press_color: 10919082,
   text: "Heart"
+};
+
+export const SLEEP_BUTTON = {
+  x: px(60),
+  y: px(150),
+  w: px(160),
+  h: px(40),
+  text_size: px(36),
+  radius: px(12),
+  normal_color: 19312082,
+  press_color: 10919082,
+  text: "Sleep"
 };

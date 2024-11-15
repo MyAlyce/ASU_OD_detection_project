@@ -4,10 +4,10 @@ import { queryPermission, requestPermission } from "@zos/app";
 import hmUI from "@zos/ui";
 import { createWidget, widget, align, prop, text_style, event } from '@zos/ui'
 import { START_BUTTON } from "zosLoader:./index.[pf].layout.js";
-import { STOP_BUTTON } from "./index.r.layout";
-import { HEART_BUTTON } from "./index.r.layout";
+import { STOP_BUTTON, HEART_BUTTON, SLEEP_BUTTON } from "./index.r.layout";
 import { HeartRate, Sleep, Time } from "@zos/sensor";
 import { log } from "@zos/utils";
+
 
 const permissions = ["device:os.bg_service"];
 const service = "app-service/service";
@@ -21,6 +21,7 @@ Page(
   BasePage({
     state: {
       temp: null,
+      heartData: null,
       sleepData: null,
     },
     onInit() {
@@ -81,25 +82,41 @@ Page(
         },
       });
 
+      const text = createWidget(widget.TEXT, {
+        x: 240,
+        y: 90,
+        w: 150,
+        h: 106,
+        
+        color: 0xffffff,
+        text_size: 30,
+        align_h: align.CENTER_H,
+        align_v: align.CENTER_V,
+        text_style: text_style.WRAP,
+        text: "",
+      })
+
       hmUI.createWidget(hmUI.widget.BUTTON, {
         ...HEART_BUTTON,
         click_func: () => {
           console.log("heart button clicked");
-          this.state.sleepData = new HeartRate();
-          const s_info = `Heartrate ${this.state.sleepData.getLast()}`;
-          const text = createWidget(widget.TEXT, {
-            x: 240,
-            y: 80,
-            w: 150,
-            h: 106,
-            
-            color: 0xffffff,
-            text_size: 30,
-            align_h: align.CENTER_H,
-            align_v: align.CENTER_V,
-            text_style: text_style.WRAP,
-            text: s_info,
-          })
+          this.state.heartData = new HeartRate();
+          const s_info = `Heartrate ${this.state.heartData.getLast()}`;
+          text.setProperty(prop.MORE, { text: s_info });
+          text.setProperty(prop.MORE, {text_size:25});
+          console.log(s_info);
+        },
+      });
+
+      hmUI.createWidget(hmUI.widget.BUTTON, {
+        ...SLEEP_BUTTON,
+        click_func: () => {
+          console.log("heart button clicked");
+          this.state.sleepData = new Sleep();
+          this.state.sleepData.getInfo();
+          const s_info = `Sleep ${JSON.stringify(this.state.sleepData.getStageConstantObj())}`;
+          text.setProperty(prop.MORE, { text: s_info });
+          text.setProperty(prop.MORE, {text_size:12});
           console.log(s_info);
         },
       });

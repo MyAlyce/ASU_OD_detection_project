@@ -11,7 +11,7 @@ AppSideService(
       messageBuilder.listen(() => {});
 
       //send message to the device app
-      messageBuilder.call({text:'Hello Zepp you sexy little bastard'});
+      messageBuilder.call({text:'Hello Zepp'});
 
       //and receive message
       messageBuilder.on('request', (ctx) => {
