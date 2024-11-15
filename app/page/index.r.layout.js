@@ -26,24 +26,24 @@ export const STOP_BUTTON = {
 };
 
 export const HEART_BUTTON = {
-  x: px(60),
+  x: px(80),
   y: px(100),
-  w: px(160),
+  w: px(60),
   h: px(40),
-  text_size: px(36),
-  radius: px(12),
+  text_size: px(20),
+  radius: px(20),
   normal_color: 19312082,
   press_color: 10919082,
   text: "Heart"
 };
 
 export const SLEEP_BUTTON = {
-  x: px(60),
+  x: px(80),
   y: px(150),
-  w: px(160),
+  w: px(60),
   h: px(40),
-  text_size: px(36),
-  radius: px(12),
+  text_size: px(20),
+  radius: px(20),
   normal_color: 19312082,
   press_color: 10919082,
   text: "Sleep"
