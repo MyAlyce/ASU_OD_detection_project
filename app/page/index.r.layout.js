@@ -34,5 +34,5 @@ export const HEART_BUTTON = {
   radius: px(12),
   normal_color: 19312082,
   press_color: 10919082,
-  text: "HeartRate"
+  text: "Heart"
 };

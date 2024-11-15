@@ -86,18 +86,18 @@ Page(
         click_func: () => {
           console.log("heart button clicked");
           this.state.sleepData = new HeartRate();
-          const s_info = `Heartrate: ${this.state.sleepData.getLast()}`;
+          const s_info = `Heartrate ${this.state.sleepData.getLast()}`;
           const text = createWidget(widget.TEXT, {
-            x: 200,
-            y: 100,
-            w: 200,
+            x: 240,
+            y: 80,
+            w: 150,
             h: 106,
-            text_style: text_style.WRAP,
+            
             color: 0xffffff,
-            text_size: 36,
+            text_size: 30,
             align_h: align.CENTER_H,
             align_v: align.CENTER_V,
-            text_style: text_style.NONE,
+            text_style: text_style.WRAP,
             text: s_info,
           })
           console.log(s_info);
