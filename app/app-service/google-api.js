@@ -75,15 +75,25 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
      */
     const dataRows = data.map(entry => {
         return [
-            new Date(entry.recordTime * 1000).toISOString(),
-            JSON.stringify(entry.user),
-            JSON.stringify(entry.device),
-            entry.heartRateLast,
-            entry.heartRateResting,
-            JSON.stringify(entry.heartRateSummary),
-            JSON.stringify(entry.sleepInfo),
-            JSON.stringify(entry.sleepStageList),
-            JSON.stringify(entry.sleepStatus)
+            new Date(data.recordTime * 1000).toISOString(),
+            data.heartRateLast,
+            data.heartRateResting,
+            // Daily Heart Rate data
+            heartRateSummary.maximum?.maximum || 0,
+            heartRateSummary.maximum?.time || 0,
+            heartRateSummary.maximum?.time_zone || 0,
+            heartRateSummary.maximum?.hr_value || 0,
+            // Sleep Info data
+            sleepInfo.score || 0,
+            sleepInfo.startTime || 0,
+            sleepInfo.endTime || -1,
+            sleepInfo.deepTime || 0,
+            sleepInfo.totalTime || 0,
+            // Sleep Stages data
+            sleepStages.WAKE_STAGE || 0,
+            sleepStages.REM_STAGE || 0,
+            sleepStages.LIGHT_STAGE || 0,
+            sleepStages.DEEP_STAGE || 0,
         ];
     })
 
@@ -91,7 +101,8 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
      * Google Sheets API requires data to be a 2D array where every element is an array of values for a given row
      * (think of it in terms of rows/columns in a spreadsheet)
      */
-    const formattedData = [headers, ...dataRows];
+    const addHeaders = false;
+    const formattedData = addHeaders ? [headers, ...dataRows] : dataRows;
     console.log(formattedData);
 
     return internalSendDataToGoogleSheets(
@@ -129,8 +140,8 @@ const internalSendDataToGoogleSheets = (svc, accessToken, values) => {
         majorDimension: 'ROWS',
     };
 
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
-    // const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+    // const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
     return svc.httpRequest({
         method: 'PUT',
         url,
