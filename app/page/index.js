@@ -19,9 +19,9 @@ Page(
       this.request({
         method: "GET_TOKEN"
       }).then(res => {
-        hmUI.showToast({
-          text: "token: " + res
-        })
+        // hmUI.showToast({
+        //   text: "token: " + res
+        // })
         storage.setKey("token", res);
       }).catch(err => {
         hmUI.showToast({
@@ -87,7 +87,7 @@ Page(
         storage.setKey("token", req.params.value);
 
         hmUI.showToast({
-          text: "Token saved " + JSON.stringify(req.params),
+          text: "Token saved."// + JSON.stringify(req.params),
         });
         storage.setKey("token", req.params.value);
       }
@@ -103,7 +103,7 @@ const startAppService = (token) => {
     complete_func: (info) => {
       console.log("service started complete_func:", JSON.stringify(info));
       hmUI.showToast({
-        text: info.result ? 'Service started' + token : 'Service failed to start',
+        text: info.result ? 'Service started.' : 'Service failed to start; check if logged in via settings.',
       });
     },
   });
