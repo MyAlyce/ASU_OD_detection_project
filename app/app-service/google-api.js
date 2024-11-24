@@ -45,15 +45,30 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
     // i.e. only add headers if creating new file (not appending to an existing one)
     const headers = [
         'Record Time',
-        'User ID',
-        'Device Info',
         'Last Heart Rate',
         'Resting Heart Rate',
-        'Daily Heart Rate Summary',
-        'Sleep Info',
-        'Sleep Stages',
-        'Sleep Status'
+        // Daily Heart Rate broken down
+        'Daily Heart Rate Maximum',
+        'Daily Heart Rate Time',
+        'Daily Heart Rate Time Zone',
+        'Daily Heart Rate Value',
+        // Sleep Info broken down
+        'Sleep Score',
+        'Sleep Start Time',
+        'Sleep End Time',
+        'Sleep Deep Time',
+        'Sleep Total Time',
+        // Sleep Stages broken down
+        'Sleep Wake Stage',
+        'Sleep REM Stage',
+        'Sleep Light Stage',
+        'Sleep Deep Stage',
     ];
+
+    // Parse the more complex objects
+    const heartRateSummary = data.heartRateSummary || {};
+    const sleepInfo = data.sleepInfo || {};
+    const sleepStages = data.sleepStageList || {};
 
     /**
      * Format each entry into its own array
