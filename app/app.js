@@ -1,33 +1,26 @@
 import { BaseApp } from '@zeppos/zml/base-app'
+import EasyStorage, { EasyTSDB } from "@silver-zepp/easy-storage";
 
-//Relevant imports for MessageBuilder
-//Files obtained from github repo https://github.com/zepp-health/zeppos-samples/tree/main/application/2.0/todo-list/shared
-//Courtesy of fay20fay
-import './shared/device-polyfill'
-import { MessageBuilder } from './shared/message'
-import { getPackageInfo } from '@zos/app'
-import * as ble from '@zos/ble'
-
-import EasyStorage from "@silver-zepp/easy-storage";
+/**
+ * The watch hosts two main storages: EasyStorage and EasyTSDB.
+ * EasyStorage is a key-value storage, and EasyTSDB is a time-series database.
+ * These tools can only be used on the watch side (i.e., pages, background service)
+ */
 const storage = new EasyStorage();
+const tsdb = new EasyTSDB({ directory: 'myalyce_data' }); // TODO: add parameters?
 
 App(
   BaseApp({
-    globalData: {
+    globals: {
       storage: storage,
-      messageBuilder: null
+      tsdb: tsdb,
     },
     onCreate() {
-      console.log('app invoke onCreate')
-      //Establish a BT connection
-      const { appId } = getPackageInfo();
-      const messageBuilder = new MessageBuilder({appId, appDevicePort: 20, appSidePort: 0,ble});
-      this.globalData.messageBuilder = messageBuilder;
-      messageBuilder.connect();
+      console.log('app invoke onCreate');
     },
     onDestroy(opts) {
-      console.log('app invoke onDestroy')
-      messageBuilder.disConnect();
+      console.log('app invoke onDestroy');
+      tsdb.databaseClose();
     },
   }),
 )

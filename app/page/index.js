@@ -7,7 +7,7 @@ import { STOP_BUTTON } from "./index.r.layout";
 
 const permissions = ["device:os.bg_service"];
 const service = "app-service/service";
-const storage = getApp()._options.globalData.storage;
+const storage = getApp().globals.storage;
 
 Page(
   BasePage({

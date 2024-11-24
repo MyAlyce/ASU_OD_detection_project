@@ -32,8 +32,11 @@ export const requestGoogleAuthData = async (authResponse) => {
 /**
  * Public-facing function to send data to Google Sheets
  * 
- * @param {*} accessToken access token from Google API
- * @param {*} data data to send to Google Sheets, as an object
+ * @param {object} svc the service object
+ * @param {string} accessToken access token from Google API
+ * @param {object[]} data data to send to Google Sheets, as an array of objects
+ * 
+ * @returns {Promise<object>} the response from the Google Sheets API
  */
 export const sendDataToGoogleSheets = (svc, accessToken, data) => {
     // Format the data into headers and values
@@ -52,20 +55,29 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
         'Sleep Status'
     ];
 
-    const dataRow = [
-        new Date(data.recordTime * 1000).toISOString(),
-        JSON.stringify(data.user),
-        JSON.stringify(data.device),
-        data.heartRateLast,
-        data.heartRateResting,
-        JSON.stringify(data.heartRateSummary),
-        JSON.stringify(data.sleepInfo),
-        JSON.stringify(data.sleepStageList),
-        JSON.stringify(data.sleepStatus)
-    ];
+    /**
+     * Format each entry into its own array
+     */
+    const dataRows = data.map(entry => {
+        return [
+            new Date(entry.recordTime * 1000).toISOString(),
+            JSON.stringify(entry.user),
+            JSON.stringify(entry.device),
+            entry.heartRateLast,
+            entry.heartRateResting,
+            JSON.stringify(entry.heartRateSummary),
+            JSON.stringify(entry.sleepInfo),
+            JSON.stringify(entry.sleepStageList),
+            JSON.stringify(entry.sleepStatus)
+        ];
+    })
 
-    // Combine headers and data
-    const formattedData = [headers, dataRow];
+    /**
+     * Google Sheets API requires data to be a 2D array where every element is an array of values for a given row
+     * (think of it in terms of rows/columns in a spreadsheet)
+     */
+    const formattedData = [headers, ...dataRows];
+    console.log(formattedData);
 
     return internalSendDataToGoogleSheets(
         svc,
@@ -76,22 +88,25 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
             console.log('Successfully wrote to Google Sheets:', body);
             return { message: `Successfully wrote ${body.updatedCells} cells.` };
         }
-        return Promise.reject({ message: 'Failed to write to Google Sheets', error: body });
+        return Promise.reject({ message: body });
     })
 }
 
 /**
  * Internal function to send data to Google Sheets
  * Do not use directly
- * @param {*} accessToken access token from Google API
- * @param {*} values the data to send
- * @returns 
+ * 
+ * @param {object} svc the service object
+ * @param {string} accessToken access token from Google API
+ * @param {object[]} values the data to send in a 2D array, each row is an array of values that get written to the same row
+ * 
+ * @returns {Promise<object>} the response from the Google Sheets API
  */
 const internalSendDataToGoogleSheets = (svc, accessToken, values) => {
     // TODO: spreadsheetId, location, isColumn should be decided in this function (probably not passed in)
     // append vs new sheet 
     const spreadsheetId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // Replace with actual spreadsheet ID
-    const range = 'Sheet1!A1'; // specify cell A1
+    const range = 'Sheet1!A1';
 
     const body = {
         range,

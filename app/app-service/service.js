@@ -7,27 +7,40 @@ import { getDeviceInfo } from '@zos/device';
 import { sendDataToGoogleSheets } from "./google-api";
 
 const timeSensor = new Time();
-const storage = getApp()._options.globalData.storage;
+const storage = getApp().globals.storage;
+const tsdb = getApp().globals.tsdb;
 const debug = true;
+const SEND_INTERVAL = 1; // in minutes
 
 AppService(
     BasePage({
         onInit() {
             const token = storage.getKey('token');
-            this.log('token', token);
-            notifyWatch(`Token: ${token}`);
+            notifyWatch(`Starting service, token is here? ${!!token}`);
             timeSensor.onPerMinute(() => {
                 this.log(
                     `Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`
                 )
 
-                sendDataToGoogleSheets(this, token, this.getMetrics()).then(res => {
-                    this.log('Successfully wrote to Google Sheets', res.message);
-                    notifyWatch(res.message);
-                }).catch(error => {
-                    this.log('Failed to write to Google Sheets', error.message);
-                    notifyWatch(`Failed to write to Google Sheets: ${error.message}`);
-                });
+                // Every minute, save metrics to TSDB
+                // saveToTSDB(this.getMetrics());
+                if (timeSensor.getMinutes() % SEND_INTERVAL == 0) {
+                    const fiveMinutesAgo = Date.now() - 6 * 60 * 1000;
+                    const now = Date.now()
+                    notifyWatch(`data ${tsdb.retrieveDataSeries(fiveMinutesAgo, now)}`);
+
+                    const data = [this.getMetrics()];
+
+                    sendDataToGoogleSheets(this, token, data).then(res => {
+                        this.log('Successfully wrote to Google Sheets', res.message);
+                        notifyWatch(res.message);
+                        // tsdb.purge(fiveMinutesAgo);
+                    }).catch(error => {
+                        this.log('Failed to write to Google Sheets', error.message);
+                        notifyWatch(`Failed to write to Google Sheets: ${JSON.stringify(error.message)}`);
+                        // TODO save to tsdb for retry later
+                    });
+                }
             });
         },
         getMetrics() {
@@ -66,4 +79,14 @@ const notifyWatch = (content) => {
             actions: []
         });
     }
+}
+
+const saveToTSDB = (data) => {
+    tsdb.writePoint('data', 64, Date.now());
+    tsdb.writePoint('data', 65, Date.now());
+    tsdb.writePoint('data', 66, Date.now());
+    tsdb.writePoint('data', 67);
+    const minAgo = Date.now() - 5 * 60 * 1000;
+    const dps = tsdb.retrieveDataSeries(minAgo, Date.now());
+    notifyWatch(`In TSDB: ${JSON.stringify(dps)}`);
 }
