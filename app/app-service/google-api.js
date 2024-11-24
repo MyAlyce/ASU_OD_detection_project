@@ -41,8 +41,6 @@ export const requestGoogleAuthData = async (authResponse) => {
 export const sendDataToGoogleSheets = (svc, accessToken, data) => {
     // Format the data into headers and values
 
-    // TODO: headers should be decided in internal function too
-    // i.e. only add headers if creating new file (not appending to an existing one)
     const headers = [
         'Record Time',
         'Last Heart Rate',
@@ -65,19 +63,18 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
         'Sleep Deep Stage',
     ];
 
-    // Parse the more complex objects
-    const heartRateSummary = data.heartRateSummary || {};
-    const sleepInfo = data.sleepInfo || {};
-    const sleepStages = data.sleepStageList || {};
-
     /**
      * Format each entry into its own array
-     */
+    */
     const dataRows = data.map(entry => {
+        // Parse the more complex objects
+        const heartRateSummary = entry.heartRateSummary || {};
+        const sleepInfo = entry.sleepInfo || {};
+        const sleepStages = entry.sleepStageList || {};
         return [
-            new Date(data.recordTime * 1000).toISOString(),
-            data.heartRateLast,
-            data.heartRateResting,
+            new Date(entry.recordTime * 1000).toISOString(),
+            entry.heartRateLast,
+            entry.heartRateResting,
             // Daily Heart Rate data
             heartRateSummary.maximum?.maximum || 0,
             heartRateSummary.maximum?.time || 0,
@@ -101,6 +98,9 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
      * Google Sheets API requires data to be a 2D array where every element is an array of values for a given row
      * (think of it in terms of rows/columns in a spreadsheet)
      */
+
+    // TODO: headers should be decided in internal function too
+    // i.e. only add headers if creating new file (not appending to an existing one)
     const addHeaders = false;
     const formattedData = addHeaders ? [headers, ...dataRows] : dataRows;
     console.log(formattedData);
