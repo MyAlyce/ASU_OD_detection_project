@@ -75,7 +75,7 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
             new Date(entry.recordTime * 1000).toISOString(),
             entry.heartRateLast,
             entry.heartRateResting,
-            // Daily Heart Rate data
+            // // Daily Heart Rate data
             heartRateSummary.maximum?.maximum || 0,
             heartRateSummary.maximum?.time || 0,
             heartRateSummary.maximum?.time_zone || 0,
@@ -110,9 +110,11 @@ export const sendDataToGoogleSheets = (svc, accessToken, data) => {
         accessToken,
         formattedData,
     ).then(({ status, body }) => {
-        if (status == 200 && body?.updatedCells > 0) {
+        // TODO: the append URL returns a different response than the write URL, so this should be handled differently
+        if (status == 200) {
             console.log('Successfully wrote to Google Sheets:', body);
-            return { message: `Successfully wrote ${body.updatedCells} cells.` };
+            // return { message: `Successfully wrote ${body.updatedCells} cells.` };
+            return { message: `Successfully wrote to Google Sheets` };
         }
         return Promise.reject({ message: body });
     })
@@ -143,7 +145,7 @@ const internalSendDataToGoogleSheets = (svc, accessToken, values) => {
     // const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
     return svc.httpRequest({
-        method: 'PUT',
+        method: 'POST',
         url,
         body: JSON.stringify(body),
         headers: {
