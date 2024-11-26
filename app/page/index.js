@@ -13,9 +13,7 @@ import {
 
 const permissions = ['device:os.bg_service'];
 const service = 'app-service/service';
-const storage = getApp()._options.globalData.storage;
-
-// Initialize the Sleep module
+const storage = getApp().globals.storage
 const sleep = new Sleep();
 
 // Main page setup
@@ -97,7 +95,7 @@ Page(
 		build() {
 			hmUI.createWidget(hmUI.widget.BUTTON, {
 				...START_BUTTON,
-				click_func: async () => {
+				click_func: () => {
 					console.log('fetch button clicked');
 					const token = storage.getKey('token');
 					if (!token) {
@@ -112,7 +110,7 @@ Page(
 					if (checkPermissions()) {
 						startAppService(token);
 					} else {
-						console.log('Permission denied');
+						console.log('permission denied');
 					}
 				},
 			});
@@ -278,14 +276,13 @@ const startAppService = (token) => {
 	});
 };
 
-// Asynchronous permission check
-const checkPermissions = async () => {
-	// Query for permissions first
-	const [permissionResult] = queryPermission({ permissions });
-
+const checkPermissions = () => {
+	const [permissionResult] = queryPermission({
+		permissions,
+	});
 	if (permissionResult === 2) {
-		console.log('Permission previously allowed');
-		return true; // Permission granted
+		console.log('permission previously allowed');
+		return true;
 	} else {
 		requestPermission({
 			permissions,
@@ -299,3 +296,4 @@ const checkPermissions = async () => {
 	}
 	return false;
 };
+
