@@ -7,7 +7,7 @@ import { STOP_BUTTON } from './index.r.layout';
 
 const permissions = ['device:os.bg_service'];
 const service = 'app-service/service';
-const storage = getApp()._options.globalData.storage;
+const storage = getApp().globals.storage;
 
 Page(
 	BasePage({
@@ -94,7 +94,7 @@ Page(
 				storage.setKey('token', req.params.value);
 
 				hmUI.showToast({
-					text: 'Token saved ' + JSON.stringify(req.params),
+					text: 'Token saved.', // + JSON.stringify(req.params),
 				});
 				storage.setKey('token', req.params.value);
 			}
@@ -111,8 +111,8 @@ const startAppService = (token) => {
 			console.log('service started complete_func:', JSON.stringify(info));
 			hmUI.showToast({
 				text: info.result
-					? 'Service started' + token
-					: 'Service failed to start',
+					? 'Service started.'
+					: 'Service failed to start; check if logged in via settings.',
 			});
 		},
 	});
