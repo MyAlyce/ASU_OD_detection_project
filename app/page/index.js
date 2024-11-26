@@ -296,4 +296,3 @@ const checkPermissions = () => {
 	}
 	return false;
 };
-
