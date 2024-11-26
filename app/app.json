@@ -34,8 +34,7 @@
 				"page": {
 					"pages": [
 						"page/index",
-						"page/permissionsPage",
-						"page/rescuePlanPage"
+						"page/permissionsPage"
 					]
 				},
 				"app-side": {
