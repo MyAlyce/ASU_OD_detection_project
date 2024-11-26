@@ -9,7 +9,8 @@
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
-		"@zeppos/device-types": "^3.0.0"
+		"@zeppos/device-types": "^3.0.0",
+		"prettier": "^3.3.3"
 	},
 	"dependencies": {
 		"@silver-zepp/easy-storage": "^1.6.7-b",
