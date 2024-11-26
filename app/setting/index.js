@@ -1,4 +1,3 @@
-import { requestGoogleAuthData } from '../app-service/google-api';
 import {
 	GOOGLE_API_CLIENT_ID,
 	GOOGLE_API_CLIENT_SECRET,
