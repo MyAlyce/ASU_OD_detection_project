@@ -13,7 +13,7 @@ import {
 
 const permissions = ['device:os.bg_service'];
 const service = 'app-service/service';
-const storage = getApp().globals.storage;
+const storage = getApp().globals.storage
 const sleep = new Sleep();
 
 // Main page setup
@@ -110,7 +110,7 @@ Page(
 					if (checkPermissions()) {
 						startAppService(token);
 					} else {
-						console.log('Permission denied');
+						console.log('permission denied');
 					}
 				},
 			});
@@ -296,3 +296,4 @@ const checkPermissions = () => {
 	}
 	return false;
 };
+
