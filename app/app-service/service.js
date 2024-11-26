@@ -4,7 +4,7 @@ import { BasePage } from "@zeppos/zml/base-page";
 import { HeartRate, Sleep } from "@zos/sensor";
 import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
-import { sendDataToGoogleSheets } from "./google-api";
+import { GoogleApi } from "./google-api";
 
 const timeSensor = new Time();
 const storage = getApp().globals.storage;
@@ -16,6 +16,7 @@ AppService(
     BasePage({
         onInit() {
             const token = storage.getKey('token');
+            const googleApi = new GoogleApi(this);
             notifyWatch(`Starting service, token is here? ${!!token}`);
             timeSensor.onPerMinute(() => {
                 this.log(
@@ -31,7 +32,8 @@ AppService(
 
                     const data = [this.getMetrics()];
 
-                    sendDataToGoogleSheets(this, token, data).then(res => {
+                    // todo: connectStatus() to check if the phone is connected
+                    googleApi.sendDataToGoogleSheets(token, data).then(res => {
                         this.log('Successfully wrote to Google Sheets', res.message);
                         notifyWatch(res.message);
                         // tsdb.purge(fiveMinutesAgo);

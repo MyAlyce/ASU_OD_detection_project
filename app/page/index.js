@@ -19,9 +19,9 @@ Page(
       this.request({
         method: "GET_TOKEN"
       }).then(res => {
-        // hmUI.showToast({
-        //   text: "token: " + res
-        // })
+        hmUI.showToast({
+          text: "token: " + res
+        })
         storage.setKey("token", res);
       }).catch(err => {
         hmUI.showToast({
