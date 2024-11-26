@@ -51,17 +51,5 @@ export const PERMISSIONS_BUTTON = {
   radius: px(12),
   normal_color: 0x0352fc,
   press_color: 0x487ff7,
-  text: "Permission Data",
-};
-
-export const RESCUE_PLAN_BUTTON = {
-  x: px(60),
-  y: px(300),
-  w: px(360),
-  h: px(80),
-  text_size: px(36),
-  radius: px(12),
-  normal_color: a86432,
-  press_color: cc7a3d,
-  text: "Configure Rescue Plan",
+  text: "Permission Data"
 };

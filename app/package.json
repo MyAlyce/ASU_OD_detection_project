@@ -3,16 +3,18 @@
 	"version": "1.0.0",
 	"description": "",
 	"main": "app.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
-		"@zeppos/device-types": "^3.0.0"
+		"@zeppos/device-types": "^3.0.0",
+		"prettier": "^3.3.3"
 	},
 	"dependencies": {
 		"@silver-zepp/easy-storage": "^1.6.7-b",
 		"@zeppos/zml": "^0.0.29"
+	},
+	"scripts": {
+		"prettier:format": "prettier --write \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
+		"prettier:check": "prettier --check \"**/*.{ts,tsx,js,md,mdx,css,yaml}\""
 	}
 }
