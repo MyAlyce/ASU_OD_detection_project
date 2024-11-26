@@ -5,11 +5,11 @@ export class GoogleApi {
 
 	/**
 	 * Public-facing function to send data to Google Sheets
-	 * 
+	 *
 	 * @param {object} svc the service object
 	 * @param {string} accessToken access token from Google API
 	 * @param {object[]} data data to send to Google Sheets, as an array of objects
-	 * 
+	 *
 	 * @returns {Promise<object>} the response from the Google Sheets API
 	 */
 	sendDataToGoogleSheets(accessToken, data) {
@@ -68,24 +68,25 @@ export class GoogleApi {
 		const addHeaders = false;
 		const formattedData = addHeaders ? [headers, ...dataRows] : dataRows;
 
-		return this.#internalSendDataToGoogleSheets(accessToken, formattedData).then(
-			({ status, body }) => {
-				if (status == 200) {
-					console.log('Successfully wrote to Google Sheets:', body);
-					return { message: `Successfully wrote to Google Sheets` };
-				}
-				return Promise.reject({ message: body });
+		return this.#internalSendDataToGoogleSheets(
+			accessToken,
+			formattedData,
+		).then(({ status, body }) => {
+			if (status == 200) {
+				console.log('Successfully wrote to Google Sheets:', body);
+				return { message: `Successfully wrote to Google Sheets` };
 			}
-		);
+			return Promise.reject({ message: body });
+		});
 	}
 
 	/**
 	 * Internal function to send data to Google Sheets. Do not use directly!
-	 * 
+	 *
 	 * @param {object} svc the service object
 	 * @param {string} accessToken access token from Google API
 	 * @param {object[]} values the data to send in a 2D array, each row is an array of values that get written to the same row
-	 * 
+	 *
 	 * @returns {Promise<object>} the response from the Google Sheets API
 	 */
 

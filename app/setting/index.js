@@ -1,5 +1,9 @@
-import { requestGoogleAuthData } from "../app-service/google-api"
-import { GOOGLE_API_CLIENT_ID, GOOGLE_API_CLIENT_SECRET, GOOGLE_API_REDIRECT_URI } from "../google-api-constants";
+import { requestGoogleAuthData } from '../app-service/google-api';
+import {
+	GOOGLE_API_CLIENT_ID,
+	GOOGLE_API_CLIENT_SECRET,
+	GOOGLE_API_REDIRECT_URI,
+} from '../google-api-constants';
 
 AppSettingsPage({
 	state: {
@@ -70,33 +74,35 @@ AppSettingsPage({
 				response_type: 'code',
 				include_granted_scopes: 'true',
 				access_type: 'offline',
-				prompt: 'consent'
+				prompt: 'consent',
 			},
 			onAccessToken: (token) => {
-				console.log('onAccessToken', token)
+				console.log('onAccessToken', token);
 			},
 			onReturn: async (authBody) => {
-				console.log('onReturn', authBody)
+				console.log('onReturn', authBody);
 				// this.state.props.settingsStorage.setItem('googleAuthCode', authBody.code)
-				const authData = await requestGoogleAuthData(authBody)
-				authData.requested_at = new Date()
-				authData.expires_at = new Date(authData.requested_at.getTime() + authData.expires_in * 1000)
-				this.state.props.settingsStorage.setItem('googleAuthData', JSON.stringify(authData))
-				console.log('authData', this.state.googleAuthData)
+				const authData = await requestGoogleAuthData(authBody);
+				authData.requested_at = new Date();
+				authData.expires_at = new Date(
+					authData.requested_at.getTime() + authData.expires_in * 1000,
+				);
+				this.state.props.settingsStorage.setItem(
+					'googleAuthData',
+					JSON.stringify(authData),
+				);
+				console.log('authData', this.state.googleAuthData);
 			},
-		})
+		});
 
 		return View(
 			{
 				style: {
-					padding: '12px 20px'
-				}
+					padding: '12px 20px',
+				},
 			},
-			[
-				auth,
-				clearBtn
-			]
-		)
+			[auth, clearBtn],
+		);
 	},
 	isTokenExpired() {
 		const authData = this.state.googleAuthData;
@@ -107,4 +113,4 @@ AppSettingsPage({
 		const expiresAt = new Date(authData.expires_at);
 		return now >= expiresAt;
 	},
-})
+});

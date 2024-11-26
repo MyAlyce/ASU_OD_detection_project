@@ -1,5 +1,5 @@
-import { BaseApp } from '@zeppos/zml/base-app'
-import EasyStorage, { EasyTSDB } from "@silver-zepp/easy-storage";
+import { BaseApp } from '@zeppos/zml/base-app';
+import EasyStorage, { EasyTSDB } from '@silver-zepp/easy-storage';
 
 /**
  * The watch hosts two main storages: EasyStorage and EasyTSDB.
@@ -10,17 +10,17 @@ const storage = new EasyStorage();
 const tsdb = new EasyTSDB({ directory: 'myalyce_data' }); // TODO: add parameters?
 
 App(
-  BaseApp({
-    globals: {
-      storage: storage,
-      tsdb: tsdb,
-    },
-    onCreate() {
-      console.log('app invoke onCreate');
-    },
-    onDestroy(opts) {
-      console.log('app invoke onDestroy');
-      tsdb.databaseClose();
-    },
-  }),
-)
+	BaseApp({
+		globals: {
+			storage: storage,
+			tsdb: tsdb,
+		},
+		onCreate() {
+			console.log('app invoke onCreate');
+		},
+		onDestroy(opts) {
+			console.log('app invoke onDestroy');
+			tsdb.databaseClose();
+		},
+	}),
+);

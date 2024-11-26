@@ -4,7 +4,7 @@ import { BasePage } from '@zeppos/zml/base-page';
 import { HeartRate, Sleep } from '@zos/sensor';
 import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
-import { GoogleApi } from "./google-api";
+import { GoogleApi } from './google-api';
 
 const timeSensor = new Time();
 const storage = getApp().globals.storage;
@@ -20,28 +20,33 @@ AppService(
 			notifyWatch(`Starting service, token is here? ${!!token}`);
 			timeSensor.onPerMinute(() => {
 				this.log(
-					`Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`
-				)
+					`Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
+				);
 
 				// Every minute, save metrics to TSDB
 				// saveToTSDB(this.getMetrics());
 				if (timeSensor.getMinutes() % SEND_INTERVAL == 0) {
 					const fiveMinutesAgo = Date.now() - 6 * 60 * 1000;
-					const now = Date.now()
+					const now = Date.now();
 					notifyWatch(`data ${tsdb.retrieveDataSeries(fiveMinutesAgo, now)}`);
 
 					const data = [this.getMetrics()];
 
 					// todo: connectStatus() to check if the phone is connected
-					googleApi.sendDataToGoogleSheets(token, data).then(res => {
-						this.log('Successfully wrote to Google Sheets', res.message);
-						notifyWatch(res.message);
-						// tsdb.purge(fiveMinutesAgo);
-					}).catch(error => {
-						this.log('Failed to write to Google Sheets', error.message);
-						notifyWatch(`Failed to write to Google Sheets: ${JSON.stringify(error.message)}`);
-						// TODO save to tsdb for retry later
-					});
+					googleApi
+						.sendDataToGoogleSheets(token, data)
+						.then((res) => {
+							this.log('Successfully wrote to Google Sheets', res.message);
+							notifyWatch(res.message);
+							// tsdb.purge(fiveMinutesAgo);
+						})
+						.catch((error) => {
+							this.log('Failed to write to Google Sheets', error.message);
+							notifyWatch(
+								`Failed to write to Google Sheets: ${JSON.stringify(error.message)}`,
+							);
+							// TODO save to tsdb for retry later
+						});
 				}
 			});
 		},
@@ -78,10 +83,10 @@ const notifyWatch = (content) => {
 		notificationMgr.notify({
 			title: 'MyAlyce',
 			content,
-			actions: []
+			actions: [],
 		});
 	}
-}
+};
 
 const saveToTSDB = (data) => {
 	tsdb.writePoint('data', 64, Date.now());
@@ -91,4 +96,4 @@ const saveToTSDB = (data) => {
 	const minAgo = Date.now() - 5 * 60 * 1000;
 	const dps = tsdb.retrieveDataSeries(minAgo, Date.now());
 	notifyWatch(`In TSDB: ${JSON.stringify(dps)}`);
-}
+};
