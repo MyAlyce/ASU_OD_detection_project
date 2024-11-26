@@ -1,5 +1,10 @@
 import { px } from "@zos/utils";
-import { BUTTON_TEXT, BUTTON_TEXT_STOP, NORMAL_COLOR, PRESS_COLOR } from "../utils/constants";
+import {
+  BUTTON_TEXT,
+  BUTTON_TEXT_STOP,
+  NORMAL_COLOR,
+  PRESS_COLOR,
+} from "../utils/constants";
 
 export const START_BUTTON = {
   x: px(60),
@@ -10,9 +15,8 @@ export const START_BUTTON = {
   radius: px(12),
   normal_color: NORMAL_COLOR,
   press_color: PRESS_COLOR,
-  text: BUTTON_TEXT
+  text: BUTTON_TEXT,
 };
-
 
 export const STOP_BUTTON = {
   x: px(60),
@@ -23,7 +27,7 @@ export const STOP_BUTTON = {
   radius: px(12),
   normal_color: NORMAL_COLOR,
   press_color: PRESS_COLOR,
-  text: BUTTON_TEXT_STOP
+  text: BUTTON_TEXT_STOP,
 };
 
 export const SLEEP_BUTTON = {
@@ -35,7 +39,7 @@ export const SLEEP_BUTTON = {
   radius: px(12),
   normal_color: 0xaa42ee,
   press_color: 0xb964f0,
-  text: "Sleep Data"
+  text: "Sleep Data",
 };
 
 export const PERMISSIONS_BUTTON = {
@@ -47,5 +51,17 @@ export const PERMISSIONS_BUTTON = {
   radius: px(12),
   normal_color: 0x0352fc,
   press_color: 0x487ff7,
-  text: "Permission Data"
+  text: "Permission Data",
+};
+
+export const RESCUE_PLAN_BUTTON = {
+  x: px(60),
+  y: px(300),
+  w: px(360),
+  h: px(80),
+  text_size: px(36),
+  radius: px(12),
+  normal_color: a86432,
+  press_color: cc7a3d,
+  text: "Configure Rescue Plan",
 };

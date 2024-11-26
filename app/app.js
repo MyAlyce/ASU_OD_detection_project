@@ -1,4 +1,4 @@
-import { BaseApp } from '@zeppos/zml/base-app'
+import { BaseApp } from "@zeppos/zml/base-app";
 
 import EasyStorage from "@silver-zepp/easy-storage";
 const storage = new EasyStorage();
@@ -6,13 +6,13 @@ const storage = new EasyStorage();
 App(
   BaseApp({
     globalData: {
-      storage: storage
+      storage: storage,
     },
     onCreate() {
-      console.log('app invoke onCreate')
+      console.log("app invoke onCreate");
     },
     onDestroy(opts) {
-      console.log('app invoke onDestroy')
+      console.log("app invoke onDestroy");
     },
   }),
-)
+);

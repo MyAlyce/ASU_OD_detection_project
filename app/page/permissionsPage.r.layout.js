@@ -77,5 +77,5 @@ export const BACK_BUTTON = {
   radius: px(12),
   normal_color: NORMAL_COLOR,
   press_color: PRESS_COLOR,
-  text: "Go Back"
+  text: "Go Back",
 };
