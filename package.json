@@ -2,7 +2,7 @@
 	"name": "myalyce",
 	"version": "1.0.0",
 	"description": "",
-	"main": "app.js",
+	"main": "app/app.js",
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
@@ -15,6 +15,9 @@
 	},
 	"scripts": {
 		"prettier:format": "prettier --write \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
-		"prettier:check": "prettier --check \"**/*.{ts,tsx,js,md,mdx,css,yaml}\""
+		"prettier:check": "prettier --check \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
+		"dev": "cd app && zeus dev",
+		"bridge": "cd app && zeus bridge",
+		"preview": "cd app && zeus preview"
 	}
 }
