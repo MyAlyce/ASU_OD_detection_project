@@ -80,6 +80,11 @@ export class GoogleApi {
 		});
 	}
 
+	checkIfFileExists(accessToken, name, typeOfFile) {
+		//to do make this 
+	}
+
+
 	/**
 	 * Internal function to send data to Google Sheets. Do not use directly!
 	 *
