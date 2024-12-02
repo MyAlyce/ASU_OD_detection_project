@@ -80,10 +80,40 @@ export class GoogleApi {
 		});
 	}
 
-	checkIfFileExists(accessToken, name, typeOfFile) {
-		//to do make this 
-	}
 
+	checkIfFileExists(accessToken, name) {
+		// URL to query the Drive API for files with the specified name
+		const url = `https://www.googleapis.com/drive/v3/files?q=name='${name}'&fields=files(id,name)`;
+	
+		return this.svc
+			.httpRequest({
+				method: 'GET',
+				url,
+				headers: {
+					Authorization: `Bearer ${accessToken}`, 
+				},
+			})
+			.then(({ status, body }) => {
+				if (status === 200) {
+					const files = JSON.parse(body).files;
+					if (files.length > 0) {
+						console.log(`File found: ${files[0].name}`);
+						return true; // File exists
+					} else {
+						console.log('File not found.');
+						return false; 
+					}
+				}
+				// If the response status is not 200, reject the promise
+				return Promise.reject({ message: 'Error checking file existence', status });
+			})
+			.catch(error => {
+				// Handle any errors that occur during the request
+				console.error('Error:', error);
+				return false; 
+			});
+	}	
+	
 
 	/**
 	 * Internal function to send data to Google Sheets. Do not use directly!

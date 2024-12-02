@@ -18,6 +18,20 @@ AppService(
 			const token = storage.getKey('token');
 			const googleApi = new GoogleApi(this);
 			notifyWatch(`Starting service, token is here? ${!!token}`);
+
+			
+			// Check if the file "zepptest" exists using the method from googleApi
+			googleApi.checkIfFileExists(token, 'zepptest').then((exists) => {
+				if (exists) {
+					notifyWatch('File "zepptest" exists!');
+				} else {
+					notifyWatch('File "zepptest" does not exist.');
+				}
+
+			}).catch((error) => {
+				notifyWatch(`Error checking file: ${error.message}`);
+			});
+
 			timeSensor.onPerMinute(() => {
 				this.log(
 					`Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
