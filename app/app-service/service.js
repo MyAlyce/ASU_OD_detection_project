@@ -43,7 +43,7 @@ AppService(
 							notifyWatch('File "zepptest" does not exist.');
 						}
 
-					}).catch((error) => {
+					}).catch((error) => { // TODO debug, error "not a function?"
 						this.log("Error checking file" + error)
 						notifyWatch(`Error checking file: ${error.message}`);
 					});
