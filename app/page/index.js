@@ -4,6 +4,7 @@ import { queryPermission, requestPermission } from '@zos/app';
 import hmUI from '@zos/ui';
 import { push } from '@zos/router';
 import { Sleep } from '@zos/sensor'; // Import the Sleep module
+import { HeartRate } from '@zos/sensor';
 import {
 	START_BUTTON,
 	SLEEP_BUTTON,
@@ -15,6 +16,8 @@ const permissions = ['device:os.bg_service'];
 const service = 'app-service/service';
 const storage = getApp().globals.storage;
 const sleep = new Sleep();
+const heartRate = new HeartRate();
+
 
 // Main page setup
 Page(
@@ -33,7 +36,7 @@ Page(
 			if (typeof params === 'string') {
 				try {
 					params = JSON.parse(params); // Convert string to object
-					console.log('Parsed params:', params);
+					console.log('Parsed params:', JSON.stringify(params));
 				} catch (error) {
 					console.error('Error parsing params:', error);
 					return;
@@ -58,6 +61,7 @@ Page(
 					'deepStage',
 				];
 
+
 				let permissions = {}; // Local object to store permissions
 
 				permissionKeys.forEach((key) => {
@@ -69,7 +73,7 @@ Page(
 
 				// Store the permissions in state
 				this.state.permissions = permissions;
-				console.log('Stored permissions:', this.state.permissions);
+				console.log('Stored permissions:', JSON.stringify(this.state.permissions));
 			} else {
 				console.log('No permission data received or invalid format.');
 			}
