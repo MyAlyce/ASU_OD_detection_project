@@ -1,6 +1,6 @@
-import { BasePage } from '@zeppos/zml/base-page';
-import * as appService from '@zos/app-service';
-import { queryPermission, requestPermission } from '@zos/app';
+import { BasePage } from '@zeppos/zml/base-page'
+import * as appService from "@zos/app-service";
+import { queryPermission, requestPermission } from "@zos/app";
 import hmUI from '@zos/ui';
 import { push } from '@zos/router';
 import { Sleep } from '@zos/sensor'; // Import the Sleep module
@@ -203,22 +203,22 @@ const startAppService = (token) => {
 };
 
 const checkPermissions = () => {
-	const [permissionResult] = queryPermission({
-		permissions,
-	});
-	if (permissionResult === 2) {
-		console.log('permission previously allowed');
-		return true;
-	} else {
-		requestPermission({
-			permissions,
-			callback: ([result]) => {
-				if (result === 2) {
-					console.log('permission granted');
-					return true;
-				}
-			},
-		});
-	}
-	return false;
-};
+  const [permissionResult] = queryPermission({
+    permissions
+  });
+  if (permissionResult === 2) {
+    console.log('permission previously allowed');
+    return true;
+  } else {
+    requestPermission({
+      permissions,
+      callback([result]) {
+        if (result === 2) {
+          console.log('permission granted');
+          return true;
+        }
+      }
+    });
+  }
+  return false;
+}

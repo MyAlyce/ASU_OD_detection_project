@@ -9,6 +9,7 @@ import {
 export const START_BUTTON = {
 	x: px(60),
 	y: px(300),
+	y: px(300),
 	w: px(360),
 	h: px(80),
 	text_size: px(36),
@@ -19,6 +20,11 @@ export const START_BUTTON = {
 };
 
 export const STOP_BUTTON = {
+	x: px(260), 
+	y: px(150), 
+	w: px(200), 
+	h: px(60), 
+	text_size: px(30),
 	x: px(260), 
 	y: px(150), 
 	w: px(200), 
