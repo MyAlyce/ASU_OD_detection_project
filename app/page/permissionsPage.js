@@ -4,7 +4,7 @@ import {
 	TOGGLE_OPTIONS,
 	BACK_BUTTON,
 } from 'zosLoader:./permissionsPage.[pf].layout.js';
-import { LocalStorage } from '@zos/storage';
+import { LocalStorage } from '@zos/storage'; // Import LocalStorage only once
 
 console.log('Navigated to the permissions page');
 
