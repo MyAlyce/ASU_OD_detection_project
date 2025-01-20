@@ -1,5 +1,40 @@
 import { px } from '@zos/utils';
 import { BUTTON_TEXT, NORMAL_COLOR, PRESS_COLOR } from '../utils/constants';
+import hmUI, { createWidget, widget, align, text_style, prop } from "@zos/ui";
+
+/*export const createToggleSwitch = (option, checkedValue, handleToggleChange) => ({
+	x: px(option.x + 100), // Position the toggle switch slightly to the right
+	y: px(option.y),
+	w: px(option.w),
+	h: px(option.h),
+	checked: px(checkedValue),
+	color: 0xffffff, // Text color for better visibility
+	text_size: px(16), // Smaller text size
+});*/
+
+// Function to create a label for a toggle switch
+export const createToggleLabel = (option) => ({
+	text: option.label,
+	x: px(option.x), // Position the label next to the toggle
+	y: px(option.y + 5), // Adjust the Y position slightly to match the center of the toggle
+	w: px(100), // Adjust the width for the label
+	h: px(option.h), // Keep the same height as the toggle
+	text_size: px(16), // Smaller text size for the label
+	color: 0xffffff, // Text color for better visibility
+	align_h: hmUI.align.LEFT, // Align the text to the left
+});
+
+export const titleText = createWidget(widget.TEXT, {
+	text: "Permissions Page",
+	x: px(100),
+	y: px(20),
+	w: px(200),
+	h: px(50),
+	text_size: px(24),
+	color: 0xffffff,
+	align_h: hmUI.align.CENTER_H,
+	text_style: hmUI.text_style.WRAP,
+});
 
 export const TOGGLE_OPTIONS = [
 	{

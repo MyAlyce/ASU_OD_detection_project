@@ -139,7 +139,7 @@ Page(
 				},
 			});
 
-			hmUI.createWidget(hmUI.widget.BUTTON, {
+		hmUI.createWidget(hmUI.widget.BUTTON, {
         ...SLEEP_BUTTON,
         click_func: () => {
           const jsonstringPermissions = JSON.stringify(this?.state?.permissions);
