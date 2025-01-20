@@ -19,6 +19,7 @@ Page({
 		remStage: true,
 		lightStage: true,
 		deepStage: true,
+		currHR: true,
 	},
 
 	onInit() {
@@ -91,6 +92,7 @@ Page({
 				});
 
 				// Save permissions to localStorage
+				console.log(JSON.stringify(this.state))
 				this.localStorage.setItem(
 					'userPermissions',
 					JSON.stringify(this.state),

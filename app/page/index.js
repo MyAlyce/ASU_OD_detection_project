@@ -7,7 +7,7 @@ import { Sleep } from '@zos/sensor'; // Import the Sleep module
 import { HeartRate } from '@zos/sensor';
 import {
 	START_BUTTON,
-	SLEEP_BUTTON,
+	DATA_BUTTON,
 	PERMISSIONS_BUTTON,
 	STOP_BUTTON,
 } from 'zosLoader:./index.[pf].layout.js';
@@ -31,7 +31,7 @@ Page(
 
 			// Log the entire params object to see the received data
 			console.log('Received params:', params);
-
+			console.log(JSON.stringify(params))
 			// Check if params is a string and parse it as JSON
 			if (typeof params === 'string') {
 				try {
@@ -59,6 +59,7 @@ Page(
 					'remStage',
 					'lightStage',
 					'deepStage',
+					'currHR',
 				];
 
 
@@ -141,7 +142,7 @@ Page(
 			});
 
 			hmUI.createWidget(hmUI.widget.BUTTON, {
-				...SLEEP_BUTTON,
+				...DATA_BUTTON,
 				click_func: this.onClickSleepButton.bind(this),
 			});
 
@@ -225,6 +226,10 @@ Page(
 								// Get the deep sleep stage using `getStageConstantObj`
 								this.getStageConstantObj('DEEP_STAGE');
 								break;
+							case 'currHR':
+								//get current heart rate
+								this.getHeartrate()
+								break;
 							default:
 								console.log(`No action defined for permission: ${key}`);
 						}
@@ -241,8 +246,8 @@ Page(
 		getSleepInfo(infoKey) {
 			// Using the ZeppOS Sleep module to fetch the sleep info
 			const info = sleep.getInfo();
-			const info2 = heartRate.getCurrent();
-			console.log("info is", info2, "AND type is", typeof(info2))
+			//const info2 = heartRate.getCurrent();
+			//console.log("info is", info2, "AND type is", typeof(info2))
 
 			if (info && info.hasOwnProperty(infoKey)) {
 				console.log(`${infoKey}: ${info[infoKey]}`);
@@ -262,6 +267,11 @@ Page(
 				console.log(`No data for ${stageKey}`);
 			}
 		},
+
+		getHeartrate(){
+			const info2 = heartRate.getCurrent();
+			console.log("Current heartrate is:", info2);
+		}
 	}),
 );
 

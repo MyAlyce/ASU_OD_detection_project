@@ -30,7 +30,7 @@ export const STOP_BUTTON = {
 	text: BUTTON_TEXT_STOP,
 };
 
-export const SLEEP_BUTTON = {
+export const DATA_BUTTON = {
 	x: px(50),
 	y: px(225),
 	w: px(200),
@@ -39,7 +39,7 @@ export const SLEEP_BUTTON = {
 	radius: px(12),
 	normal_color: 0xaa42ee,
 	press_color: 0xb964f0,
-	text: 'Sleep Data',
+	text: 'Data',
 };
 
 export const PERMISSIONS_BUTTON = {
