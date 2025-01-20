@@ -204,21 +204,21 @@ const startAppService = (token) => {
 
 const checkPermissions = () => {
 	const [permissionResult] = queryPermission({
-		permissions
+		permissions,
 	});
 	if (permissionResult === 2) {
 		console.log('permission previously allowed');
 		return true;
 	} else {
 		requestPermission({
-		permissions,
-		callback([result]) {
-			if (result === 2) {
-			console.log('permission granted');
-			return true;
-			}
-		}
+			permissions,
+			callback: ([result]) => {
+				if (result === 2) {
+					console.log('permission granted');
+					return true;
+				}
+			},
 		});
 	}
 	return false;
-}
+};
