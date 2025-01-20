@@ -1,6 +1,6 @@
-import { BasePage } from '@zeppos/zml/base-page'
-import * as appService from "@zos/app-service";
-import { queryPermission, requestPermission } from "@zos/app";
+import { BasePage } from '@zeppos/zml/base-page';
+import * as appService from '@zos/app-service';
+import { queryPermission, requestPermission } from '@zos/app';
 import hmUI from '@zos/ui';
 import { push } from '@zos/router';
 import { Sleep } from '@zos/sensor'; // Import the Sleep module
@@ -11,10 +11,10 @@ import {
 	STOP_BUTTON,
 } from 'zosLoader:./index.[pf].layout.js';
 
-import { 
-  onClickSleepButton, 
-  getSleepInfo, 
-  getStageConstantObj 
+import {
+	onClickSleepButton,
+	getSleepInfo,
+	getStageConstantObj,
 } from './sleepFunctions.js';
 
 const permissions = ['device:os.bg_service'];
@@ -30,7 +30,7 @@ Page(
 			permissions: {}, // Will hold the permissions data
 		},
 		onInit(params) {
-			console.log('Index Page onInit invoked');
+			console.log('Index PageonInit invoked');
 
 			// Log the entire params object to see the received data
 			console.log('Received params:', params);
@@ -47,8 +47,11 @@ Page(
 			}
 
 			// Ensure params is an object with keys
-			if (params && typeof params === 'object' && Object.keys(params).length > 1) {
-
+			if (
+				params &&
+				typeof params === 'object' &&
+				Object.keys(params).length > 1
+			) {
 				// Iterate through specific keys and store their values in state
 				const permissionKeys = [
 					'sleepScore',
@@ -139,15 +142,17 @@ Page(
 				},
 			});
 
-		hmUI.createWidget(hmUI.widget.BUTTON, {
-        ...SLEEP_BUTTON,
-        click_func: () => {
-          const jsonstringPermissions = JSON.stringify(this?.state?.permissions);
-          console.log('JSON string of permissions:', jsonstringPermissions);
-  
-          onClickSleepButton(jsonstringPermissions);
-          }
-      });
+			hmUI.createWidget(hmUI.widget.BUTTON, {
+				...SLEEP_BUTTON,
+				click_func: () => {
+					const jsonstringPermissions = JSON.stringify(
+						this?.state?.permissions,
+					);
+					console.log('JSON string of permissions:', jsonstringPermissions);
+
+					onClickSleepButton(jsonstringPermissions);
+				},
+			});
 
 			hmUI.createWidget(hmUI.widget.BUTTON, {
 				...PERMISSIONS_BUTTON,
@@ -182,7 +187,6 @@ Page(
 			}
 		},
 	}),
-
 );
 
 // Service-related functions

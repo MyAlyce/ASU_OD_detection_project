@@ -62,7 +62,6 @@ Page({
 			hmUI.createWidget(hmUI.widget.TEXT, {
 				...createToggleLabel(option),
 			});
-	
 
 			console.log(`Created toggle widget and label for: ${option.label}`);
 		});

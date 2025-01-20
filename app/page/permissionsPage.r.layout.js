@@ -1,6 +1,6 @@
 import { px } from '@zos/utils';
 import { BUTTON_TEXT, NORMAL_COLOR, PRESS_COLOR } from '../utils/constants';
-import hmUI, { createWidget, widget, align, text_style, prop } from "@zos/ui";
+import hmUI, { createWidget, widget, align, text_style, prop } from '@zos/ui';
 
 /*export const createToggleSwitch = (option, checkedValue, handleToggleChange) => ({
 	x: px(option.x + 100), // Position the toggle switch slightly to the right
@@ -25,7 +25,7 @@ export const createToggleLabel = (option) => ({
 });
 
 export const titleText = createWidget(widget.TEXT, {
-	text: "Permissions Page",
+	text: 'Permissions Page',
 	x: px(100),
 	y: px(20),
 	w: px(200),
