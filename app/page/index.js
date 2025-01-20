@@ -18,7 +18,6 @@ const storage = getApp().globals.storage;
 const sleep = new Sleep();
 const heartRate = new HeartRate();
 
-
 // Main page setup
 Page(
 	BasePage({
@@ -31,7 +30,7 @@ Page(
 
 			// Log the entire params object to see the received data
 			console.log('Received params:', params);
-			console.log(JSON.stringify(params))
+			console.log(JSON.stringify(params));
 			// Check if params is a string and parse it as JSON
 			if (typeof params === 'string') {
 				try {
@@ -62,7 +61,6 @@ Page(
 					'currHR',
 				];
 
-
 				let permissions = {}; // Local object to store permissions
 
 				permissionKeys.forEach((key) => {
@@ -74,7 +72,10 @@ Page(
 
 				// Store the permissions in state
 				this.state.permissions = permissions;
-				console.log('Stored permissions:', JSON.stringify(this.state.permissions));
+				console.log(
+					'Stored permissions:',
+					JSON.stringify(this.state.permissions),
+				);
 			} else {
 				console.log('No permission data received or invalid format.');
 			}
@@ -228,7 +229,7 @@ Page(
 								break;
 							case 'currHR':
 								//get current heart rate
-								this.getHeartrate()
+								this.getHeartrate();
 								break;
 							default:
 								console.log(`No action defined for permission: ${key}`);
@@ -268,10 +269,10 @@ Page(
 			}
 		},
 
-		getHeartrate(){
+		getHeartrate() {
 			const info2 = heartRate.getCurrent();
-			console.log("Current heartrate is:", info2);
-		}
+			console.log('Current heartrate is:', info2);
+		},
 	}),
 );
 

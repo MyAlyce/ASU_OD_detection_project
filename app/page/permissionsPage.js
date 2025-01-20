@@ -92,7 +92,7 @@ Page({
 				});
 
 				// Save permissions to localStorage
-				console.log(JSON.stringify(this.state))
+				console.log(JSON.stringify(this.state));
 				this.localStorage.setItem(
 					'userPermissions',
 					JSON.stringify(this.state),
