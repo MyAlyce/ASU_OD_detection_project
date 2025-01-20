@@ -66,11 +66,19 @@ export const TOGGLE_OPTIONS = [
 		w: px(200),
 		h: px(40),
 	},
+	{
+		label: 'Current Heartrate',
+		key: 'currHR',
+		x: px(100),
+		y: px(480),
+		w: px(200),
+		h: px(40),
+	},
 ];
 
 export const BACK_BUTTON = {
 	x: px(150),
-	y: px(325),
+	y: px(415),
 	w: px(200),
 	h: px(50),
 	text_size: px(25),

@@ -241,6 +241,8 @@ Page(
 		getSleepInfo(infoKey) {
 			// Using the ZeppOS Sleep module to fetch the sleep info
 			const info = sleep.getInfo();
+			const info2 = heartRate.getCurrent();
+			console.log("info is", info2, "AND type is", typeof(info2))
 
 			if (info && info.hasOwnProperty(infoKey)) {
 				console.log(`${infoKey}: ${info[infoKey]}`);
