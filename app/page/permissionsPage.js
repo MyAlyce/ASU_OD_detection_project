@@ -3,6 +3,8 @@ import { push } from '@zos/router';
 import {
 	TOGGLE_OPTIONS,
 	BACK_BUTTON,
+	titleText,
+	createToggleLabel,
 } from 'zosLoader:./permissionsPage.[pf].layout.js';
 import { LocalStorage } from '@zos/storage'; // Import LocalStorage only once
 
@@ -31,15 +33,9 @@ Page({
 		console.log('Permissions Page Build Called');
 
 		// Display the main title
+		// Need to add to permissionsPage layout file
 		hmUI.createWidget(hmUI.widget.TEXT, {
-			text: this.state.message,
-			x: 100,
-			y: 20,
-			w: 200,
-			h: 50,
-			text_size: 24,
-			color: 0xffffff,
-			align_h: hmUI.align.CENTER_H,
+			...titleText,
 		});
 
 		// Create toggle switches with their corresponding names
@@ -62,16 +58,9 @@ Page({
 				},
 			});
 
-			// Create the label (name) for each toggle switch next to it
+			// Create the label for each toggle switch next to it
 			hmUI.createWidget(hmUI.widget.TEXT, {
-				text: option.label,
-				x: option.x, // Position the label next to the toggle
-				y: option.y + 5, // Adjust the Y position slightly to match the center of the toggle
-				w: px(100), // Adjust the width for the label
-				h: option.h, // Keep the same height as the toggle
-				text_size: px(16), // Smaller text size for the label
-				color: 0xffffff, // Text color for better visibility
-				align_h: hmUI.align.LEFT, // Align the text to the left
+				...createToggleLabel(option),
 			});
 
 			console.log(`Created toggle widget and label for: ${option.label}`);

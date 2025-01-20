@@ -19,10 +19,10 @@ export const START_BUTTON = {
 };
 
 export const STOP_BUTTON = {
-	x: px(260), 
-	y: px(150), 
-	w: px(200), 
-	h: px(60), 
+	x: px(260),
+	y: px(150),
+	w: px(200),
+	h: px(60),
 	text_size: px(30),
 	radius: px(12),
 	normal_color: NORMAL_COLOR,
