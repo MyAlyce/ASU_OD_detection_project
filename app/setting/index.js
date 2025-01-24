@@ -61,6 +61,16 @@ AppSettingsPage({
 			},
 		});
 
+		const tt = Text(
+			{
+				style: {
+					fontSize: '12px',
+					marginTop: '10px',
+				},
+			},
+			`Google Auth Data: ${JSON.stringify(this.state.googleAuthData)}`,
+		);
+
 		const auth = Auth({
 			label: signInBtn,
 			authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
@@ -100,7 +110,7 @@ AppSettingsPage({
 					padding: '12px 20px',
 				},
 			},
-			[auth, clearBtn],
+			[auth, clearBtn, tt],
 		);
 	},
 	isTokenExpired() {

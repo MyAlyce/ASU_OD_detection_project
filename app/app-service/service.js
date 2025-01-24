@@ -20,18 +20,19 @@ AppService(
 			const expiryDate = storage.getKey('expiresAt');
 			const googleApi = new GoogleApi(this, token, refreshToken, expiryDate);
 
-			notifyWatch(`Starting service, token is here? ${!!token}`);
+			notifyWatch(
+				`Starting service, token is here? ${!!token} expires at ${expiryDate}`,
+			);
 			timeSensor.onPerMinute(() => {
 				this.log(
 					`Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
 				);
 
-				// Every minute, save metrics to TSDB
 				// saveToTSDB(this.getMetrics());
 				if (timeSensor.getMinutes() % SEND_INTERVAL == 0) {
 					const fiveMinutesAgo = Date.now() - 6 * 60 * 1000;
 					const now = Date.now();
-					notifyWatch(`data ${tsdb.retrieveDataSeries(fiveMinutesAgo, now)}`);
+					// notifyWatch(`data ${tsdb.retrieveDataSeries(fiveMinutesAgo, now)}`);
 
 					const data = [this.getMetrics()];
 

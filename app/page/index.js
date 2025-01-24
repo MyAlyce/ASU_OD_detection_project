@@ -78,11 +78,11 @@ Page(
 			})
 				.then((res) => {
 					hmUI.showToast({
-						text: 'token: ' + res.accessToken,
+						text: `token: ${res.accessToken} expires at ${res.expiresAt}`,
 					});
 					storage.setKey('token', res.accessToken);
 					storage.setKey('refreshToken', res.refreshToken);
-					storage.setKey('expiresIn', res.expiresAt);
+					storage.setKey('expiresAt', res.expiresAt);
 				})
 				.catch((err) => {
 					hmUI.showToast({
@@ -170,7 +170,7 @@ Page(
 				});
 				storage.setKey('token', req.params.accessToken);
 				storage.setKey('refreshToken', req.params.refreshToken);
-				storage.setKey('expiresIn', req.params.expiresIn);
+				storage.setKey('expiresAt', req.params.expiresAt);
 			}
 		},
 
@@ -269,7 +269,7 @@ const startAppService = (token) => {
 			console.log('service started complete_func:', JSON.stringify(info));
 			hmUI.showToast({
 				text: info.result
-					? 'Service started' + token
+					? 'Service started: ' + token
 					: 'Service failed to start',
 			});
 		},

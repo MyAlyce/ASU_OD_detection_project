@@ -1,16 +1,12 @@
+const storage = getApp().globals.storage;
+
 export class GoogleApi {
-	constructor(svc, accessToken, refreshToken, expiryDate) {
+	constructor(svc, accessToken, refreshToken, expiresAt) {
 		this.svc = svc;
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
-		this.expiryDate = expiryDate;
+		this.expiresAt = expiresAt;
 	}
-
-	// Write a function to refresh the access token
-	// This function should be called before sending data to Google Sheets
-	// The function should check if the access token is expired and refresh it if necessary
-	// The function should return a promise that resolves with the new access token
-	refreshAccessToken() {}
 
 	/**
 	 * Public-facing function to send data to Google Sheets
@@ -106,21 +102,89 @@ export class GoogleApi {
 
 		// const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
 		const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+
+		return this.#refreshAccessToken().then(() => {
+			return this.svc
+				.httpRequest({
+					method: 'POST',
+					url,
+					body: JSON.stringify(body),
+					headers: {
+						Authorization: `Bearer ${this.accessToken}`,
+						'Content-Type': 'application/json',
+					},
+				})
+				.then(({ status, statusText, headers, body }) => {
+					if (typeof body === 'string') {
+						try {
+							body = JSON.parse(body);
+						} catch (e) {
+							return Promise.reject({ status, body: 'Invalid JSON response' });
+						}
+					}
+					return { status, body };
+				});
+		});
+	}
+
+	#refreshAccessToken() {
+		// Check if the access token is expiring in the next 5 minutes
+		const now = new Date();
+		const expiryDate = new Date(this.expiresAt);
+		const isExpired = expiryDate - now < 70 * 60 * 1000;
+		if (!isExpired) {
+			return Promise.resolve();
+		}
+
+		console.log('Refreshing access token...');
+		// Refresh the access token
+		const params = {
+			grant_type: 'refresh_token',
+			client_id: GOOGLE_API_CLIENT_ID,
+			client_secret: GOOGLE_API_CLIENT_SECRET,
+			refresh_token: this.refreshToken,
+		};
+
 		return this.svc
 			.httpRequest({
 				method: 'POST',
-				url,
-				body: JSON.stringify(body),
-				headers: {
-					Authorization: `Bearer ${this.accessToken}`,
-					'Content-Type': 'application/json',
-				},
+				url: 'https://oauth2.googleapis.com/token',
+				body: JSON.stringify(params),
 			})
 			.then(({ status, statusText, headers, body }) => {
 				if (typeof body === 'string') {
 					body = JSON.parse(body);
+					return Promise.reject({ status, body: 'Invalid JSON response' });
 				}
-				return { status, body };
+				const authData = {
+					access_token: body.access_token,
+					refresh_token: body.refresh_token,
+				};
+				authData.requested_at = new Date();
+				authData.expires_at = new Date(
+					authData.requested_at.getTime() + authData.expires_in * 1000,
+				);
+				// this.#updateAccessProperties(authData);
 			});
+	}
+
+	#updateAccessProperties(authData) {
+		this.accessToken = authData.access_token;
+		this.refreshToken = authData.refresh_token;
+		this.expiresAt = authData.expires_at;
+
+		storage.setKey('token', this.accessToken);
+		storage.setKey('refreshToken', this.refreshToken);
+		storage.setKey('expiresAt', this.expiresAt);
+
+		// Update the token stored in settings in the app-side
+		this.svc.call({
+			method: 'SET_TOKEN_SETTINGS',
+			params: {
+				accessToken: this.accessToken,
+				refreshToken: this.refreshToken,
+				expiresAt: this.expiresAt,
+			},
+		});
 	}
 }
