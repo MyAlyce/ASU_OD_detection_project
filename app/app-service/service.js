@@ -23,13 +23,15 @@ AppService(
 			notifyWatch(`Starting service, token is here? ${!!token}`);
 
 			// Create a new Google Sheet called "test"
-			googleApi.createNewGoogleSheet('test').then((response) => {
-				console.log('New spreadsheet created:', response);
-				notifyWatch(`Created new Google Sheet: ${response.spreadsheetUrl}`);
-			}).catch((error) => {
-				console.error('Failed to create new Google Sheet:', error);
-				notifyWatch('Failed to create new Google Sheet');
-			});
+			//this just does it once when onInit() is invoked
+
+			// googleApi.createNewGoogleSheet('test').then((response) => {
+			// 	console.log('New spreadsheet created:', response);
+			// 	notifyWatch(`Created new Google Sheet: ${response.spreadsheetUrl}`);
+			// }).catch((error) => {
+			// 	console.error('Failed to create new Google Sheet:', error);
+			// 	notifyWatch('Failed to create new Google Sheet');
+			// });
 
 
 			timeSensor.onPerMinute(() => {
@@ -62,6 +64,36 @@ AppService(
 							// TODO save to tsdb for retry later
 						});
 				}
+			});
+
+			timeSensor.onPerDay(() => {
+				this.log(
+					`Time report: ${timeSensor.getDay()}:${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
+					//  change this to be more clear depending on what format u want
+				);
+
+				//also zepp hass ome inbuilt get date functions if u want https://docs.zepp.com/docs/reference/device-app-api/newAPI/sensor/Time/
+
+				// Generate the current date as the title
+				const today = new Date();
+				const dateTitle = today.toISOString().split('T')[0]; // e.g., "2025-01-24"
+
+				googleApi
+					.createNewGoogleSheet(`zepp ${dateTitle}`)
+					.then((response) => {
+						this.log('New spreadsheet created:', response);
+						
+						const spreadsheetId = response.spreadsheetId; // get id of the new sheet
+						storage.setKey('currentSheetId', spreadsheetId); // save the id to storage
+
+						notifyWatch(`Created new Google Sheet: ${response.spreadsheetUrl}`);
+				})
+				.catch((error) => {
+					this.log('Failed to create a new Google Sheet', error.message);
+					notifyWatch(
+						`Failed to create a new Google Sheet: ${JSON.stringify(error.message)}`,
+					);
+				});
 			});
 		},
 		getMetrics() {
