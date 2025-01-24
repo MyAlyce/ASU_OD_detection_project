@@ -137,7 +137,7 @@ export class GoogleApi {
 		// Check if the access token is expiring in the next 5 minutes
 		const now = new Date();
 		const expiryDate = new Date(this.expiresAt);
-		const isExpired = expiryDate - now < 70 * 60 * 1000;
+		const isExpired = expiryDate - now < 5 * 60 * 1000;
 		if (!isExpired) {
 			return Promise.resolve();
 		}
