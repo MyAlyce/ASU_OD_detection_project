@@ -1,8 +1,14 @@
+import {
+	GOOGLE_API_CLIENT_ID,
+	GOOGLE_API_CLIENT_SECRET,
+} from '../google-api-constants';
+
 const storage = getApp().globals.storage;
 
 export class GoogleApi {
 	constructor(svc, accessToken, refreshToken, expiresAt) {
 		this.svc = svc;
+
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
 		this.expiresAt = expiresAt;
@@ -158,13 +164,13 @@ export class GoogleApi {
 				}
 				const authData = {
 					access_token: body.access_token,
-					refresh_token: body.refresh_token,
+					refresh_token: body.refresh_token || this.refreshToken,
 				};
 				authData.requested_at = new Date();
 				authData.expires_at = new Date(
-					authData.requested_at.getTime() + authData.expires_in * 1000,
+					authData.requested_at.getTime() + body.expires_in * 1000,
 				);
-				// this.#updateAccessProperties(authData);
+				this.#updateAccessProperties(authData);
 			});
 	}
 

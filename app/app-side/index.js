@@ -35,7 +35,7 @@ AppSideService(
 					JSON.stringify({
 						access_token: req.params.accessToken,
 						refresh_token: req.params.refreshToken,
-						expires_at: req.params.expires,
+						expires_at: req.params.expiresAt,
 					}),
 				);
 			}
