@@ -123,4 +123,46 @@ export class GoogleApi {
 				return { status, body };
 			});
 	}
+
+
+	/**
+	 * Create a new Google Sheet
+	 *
+	 * @param {string} title The title of the new spreadsheet
+	 * @returns {Promise<object>} The response from the Google Sheets API with the spreadsheet details
+	 */
+	createNewGoogleSheet(title) {
+		const url = 'https://sheets.googleapis.com/v4/spreadsheets';
+		const body = {
+			properties: {
+				title: title || 'Untitled Spreadsheet',
+			},
+		};
+
+		return this.svc
+			.httpRequest({
+				method: 'POST',
+				url,
+				body: JSON.stringify(body),
+				headers: {
+					Authorization: `Bearer ${this.accessToken}`,
+					'Content-Type': 'application/json',
+				},
+			})
+			.then(({ status, body }) => {
+				if (status === 200 || status === 201) {
+					if (typeof body === 'string') {
+						body = JSON.parse(body);
+					}
+					console.log(`Spreadsheet "${title}" created successfully!`, body);
+					return body;
+				}
+				return Promise.reject(new Error(`Failed to create spreadsheet: ${status}`));
+			})
+			.catch((err) => {
+				console.error('Error creating new spreadsheet:', err);
+				throw err;
+			});
+	}
+
 }

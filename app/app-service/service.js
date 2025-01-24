@@ -19,8 +19,19 @@ AppService(
 			const refreshToken = storage.getKey('refreshToken');
 			const expiryDate = storage.getKey('expiresAt');
 			const googleApi = new GoogleApi(this, token, refreshToken, expiryDate);
-
+			
 			notifyWatch(`Starting service, token is here? ${!!token}`);
+
+			// Create a new Google Sheet called "test"
+			googleApi.createNewGoogleSheet('test').then((response) => {
+				console.log('New spreadsheet created:', response);
+				notifyWatch(`Created new Google Sheet: ${response.spreadsheetUrl}`);
+			}).catch((error) => {
+				console.error('Failed to create new Google Sheet:', error);
+				notifyWatch('Failed to create new Google Sheet');
+			});
+
+
 			timeSensor.onPerMinute(() => {
 				this.log(
 					`Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
