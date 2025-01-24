@@ -1,18 +1,24 @@
 export class GoogleApi {
-	constructor(svc) {
+	constructor(svc, accessToken, refreshToken, expiryDate) {
 		this.svc = svc;
+		this.accessToken = accessToken;
+		this.refreshToken = refreshToken;
+		this.expiryDate = expiryDate;
 	}
+
+	// Write a function to refresh the access token
+	// This function should be called before sending data to Google Sheets
+	// The function should check if the access token is expired and refresh it if necessary
+	// The function should return a promise that resolves with the new access token
+	refreshAccessToken() {}
 
 	/**
 	 * Public-facing function to send data to Google Sheets
 	 *
-	 * @param {object} svc the service object
-	 * @param {string} accessToken access token from Google API
 	 * @param {object[]} data data to send to Google Sheets, as an array of objects
-	 *
 	 * @returns {Promise<object>} the response from the Google Sheets API
 	 */
-	sendDataToGoogleSheets(accessToken, data) {
+	sendDataToGoogleSheets(data) {
 		/**
 		 * Google Sheets API requires data to be a 2D array where every element is an array of values for a given row
 		 * (think of it in terms of rows/columns in a spreadsheet)
@@ -68,29 +74,27 @@ export class GoogleApi {
 		const addHeaders = false;
 		const formattedData = addHeaders ? [headers, ...dataRows] : dataRows;
 
-		return this.#internalSendDataToGoogleSheets(
-			accessToken,
-			formattedData,
-		).then(({ status, body }) => {
-			if (status == 200) {
-				console.log('Successfully wrote to Google Sheets:', body);
-				return { message: `Successfully wrote to Google Sheets` };
-			}
-			return Promise.reject({ message: body });
-		});
+		return this.#internalSendDataToGoogleSheets(formattedData).then(
+			({ status, body }) => {
+				if (status == 200) {
+					console.log('Successfully wrote to Google Sheets:', body);
+					return { message: `Successfully wrote to Google Sheets` };
+				}
+				return Promise.reject({ message: body });
+			},
+		);
 	}
 
 	/**
 	 * Internal function to send data to Google Sheets. Do not use directly!
 	 *
 	 * @param {object} svc the service object
-	 * @param {string} accessToken access token from Google API
 	 * @param {object[]} values the data to send in a 2D array, each row is an array of values that get written to the same row
 	 *
 	 * @returns {Promise<object>} the response from the Google Sheets API
 	 */
 
-	#internalSendDataToGoogleSheets(accessToken, values) {
+	#internalSendDataToGoogleSheets(values) {
 		const spreadsheetId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU';
 		const range = 'Sheet1!A1';
 
@@ -108,7 +112,7 @@ export class GoogleApi {
 				url,
 				body: JSON.stringify(body),
 				headers: {
-					Authorization: `Bearer ${accessToken}`,
+					Authorization: `Bearer ${this.accessToken}`,
 					'Content-Type': 'application/json',
 				},
 			})

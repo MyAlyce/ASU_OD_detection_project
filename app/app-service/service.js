@@ -16,7 +16,10 @@ AppService(
 	BasePage({
 		onInit() {
 			const token = storage.getKey('token');
-			const googleApi = new GoogleApi(this);
+			const refreshToken = storage.getKey('refreshToken');
+			const expiryDate = storage.getKey('expiresAt');
+			const googleApi = new GoogleApi(this, token, refreshToken, expiryDate);
+
 			notifyWatch(`Starting service, token is here? ${!!token}`);
 			timeSensor.onPerMinute(() => {
 				this.log(
@@ -34,7 +37,7 @@ AppService(
 
 					// todo: connectStatus() to check if the phone is connected
 					googleApi
-						.sendDataToGoogleSheets(token, data)
+						.sendDataToGoogleSheets(data)
 						.then((res) => {
 							this.log('Successfully wrote to Google Sheets', res.message);
 							notifyWatch(res.message);

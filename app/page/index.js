@@ -67,22 +67,22 @@ Page(
 					}
 				});
 
-				// Store the permissions in state
 				this.state.permissions = permissions;
 				console.log('Stored permissions:', this.state.permissions);
 			} else {
 				console.log('No permission data received or invalid format.');
 			}
 
-			// Get token and store it in storage
 			this.request({
 				method: 'GET_TOKEN',
 			})
 				.then((res) => {
 					hmUI.showToast({
-						text: 'token: ' + res,
+						text: 'token: ' + res.accessToken,
 					});
-					storage.setKey('token', res);
+					storage.setKey('token', res.accessToken);
+					storage.setKey('refreshToken', res.refreshToken);
+					storage.setKey('expiresIn', res.expiresAt);
 				})
 				.catch((err) => {
 					hmUI.showToast({
@@ -165,12 +165,12 @@ Page(
 		onCall(req) {
 			if (req.method === 'SET_TOKEN') {
 				console.log('SET_TOKEN method invoked');
-				storage.setKey('token', req.params.value);
-
 				hmUI.showToast({
 					text: 'Token saved ' + JSON.stringify(req.params),
 				});
-				storage.setKey('token', req.params.value);
+				storage.setKey('token', req.params.accessToken);
+				storage.setKey('refreshToken', req.params.refreshToken);
+				storage.setKey('expiresIn', req.params.expiresIn);
 			}
 		},
 

@@ -12,29 +12,34 @@ AppSideService(
 
 		onRequest(req, res) {
 			console.log(`Method ==> ${req.method}`);
-			if (req.method === 'POST_TO_GOOGLE') {
-				console.log('req.body', req.body);
-			} else if (req.method === 'GET_TOKEN') {
-				const token = settingsLib.getItem('googleAuthData')
-					? JSON.parse(settingsLib.getItem('googleAuthData')).access_token
-					: undefined;
-				if (token) {
-					res(null, token);
-				} else {
+			if (req.method === 'GET_TOKEN') {
+				const googleAuthData = settingsLib.getItem('googleAuthData');
+				if (!googleAuthData) {
 					res('No token found');
+					return;
 				}
+				const parsedAuthData = JSON.parse(googleAuthData);
+				res(null, {
+					accessToken: parsedAuthData.access_token,
+					refreshToken: parsedAuthData.refresh_token,
+					expiresAt: parsedAuthData.expires_at,
+				});
 			}
 		},
+
 		onSettingsChange({ key, newValue, oldValue }) {
 			console.log('onSettingsChange', key, newValue, oldValue);
 			console.log(settingsLib.getAll());
 			if (key === 'googleAuthData') {
+				const parsedValue = JSON.parse(newValue);
 				console.log('googleAuthData changed');
 				this.call({
 					method: 'SET_TOKEN',
 					params: {
 						key: 'googleAuthData',
-						value: JSON.parse(newValue).access_token,
+						accessToken: parsedValue.access_token,
+						refreshToken: parsedValue.refresh_token,
+						expiresAt: parsedValue.expires_at,
 					},
 				});
 			}
