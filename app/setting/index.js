@@ -3,6 +3,7 @@ import {
 	GOOGLE_API_CLIENT_SECRET,
 	GOOGLE_API_REDIRECT_URI,
 } from '../google-api-constants';
+import PrimaryButton from './components/button';
 
 AppSettingsPage({
 	state: {
@@ -30,24 +31,13 @@ AppSettingsPage({
 		if (props.settingsStorage.getItem('now') !== nowTag)
 			props.settingsStorage.setItem('now', nowTag);
 
-		const signInBtn = Button({
-			label: this.state.googleAuthData ? 'Sign Out' : 'Sign In', // fix
-			style: {
-				fontSize: '12px',
-				borderRadius: '30px',
-				background: '#D85E33',
-				color: 'white',
-			},
+		const userSignedIn = !!this.state.googleAuthData;
+		const signInBtn = PrimaryButton({
+			label: 'Sign in',
 		});
 
-		const clearBtn = Button({
+		const clearBtn = PrimaryButton({
 			label: 'Clear',
-			style: {
-				fontSize: '12px',
-				borderRadius: '30px',
-				background: '#D85E33',
-				color: 'white',
-			},
 			onClick: () => {
 				console.log(
 					'before clear',
@@ -61,6 +51,45 @@ AppSettingsPage({
 			},
 		});
 
+		const clearDiv = View(
+			{
+				style: {
+					display: 'inline',
+				},
+			},
+			clearBtn,
+		);
+
+		const shareEmailInput = TextInput({
+			label: 'Share with others',
+			placeholder: 'Enter email address...',
+			onChange: async (value) => {
+				console.log('emailInput', value);
+				await shareFilesWithEmail(
+					value,
+					this.state.googleAuthData.access_token,
+				);
+			},
+			subStyle: {
+				border: 'thin rgba(0,0,0,0.1) solid',
+				borderRadius: '8px',
+				boxSizing: 'content-box',
+				color: '#000',
+				height: '1.5em',
+				lineHeight: '1.5em',
+				marginTop: '-16px',
+				padding: '8px',
+				paddingTop: '1.2em',
+			},
+			labelStyle: {
+				color: '#555',
+				fontSize: '0.8em',
+				paddingLeft: '8px',
+				position: 'relative',
+				top: '0.2em',
+			},
+		});
+
 		const tt = Text(
 			{
 				style: {
@@ -71,7 +100,7 @@ AppSettingsPage({
 			`Google Auth Data: ${JSON.stringify(this.state.googleAuthData)}`,
 		);
 
-		const auth = Auth({
+		const authDiv = Auth({
 			label: signInBtn,
 			authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
 			requestTokenUrl: 'https://oauth2.googleapis.com/token',
@@ -104,15 +133,21 @@ AppSettingsPage({
 			},
 		});
 
+		const signedInView = [clearDiv, shareEmailInput];
+
 		return View(
 			{
 				style: {
-					padding: '12px 20px',
+					padding: '20px',
+					display: 'flex',
+					flexDirection: 'column',
+					gap: '10px',
 				},
 			},
-			[auth, clearBtn, tt],
+			[userSignedIn ? signedInView : authDiv],
 		);
 	},
+
 	isTokenExpired() {
 		const authData = this.state.googleAuthData;
 		if (!authData || !authData.expires_at) {
@@ -153,4 +188,26 @@ const requestGoogleAuthData = async (authResponse) => {
 		body: body,
 	});
 	return await data.json();
+};
+
+const shareFilesWithEmail = async (address, accessToken) => {
+	const fileId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGg,RiN3Ayp4fxYtzU'; // todo remove hardcode, share with folder
+	const body = JSON.stringify({
+		role: 'reader',
+		type: 'user',
+		value: address,
+	});
+
+	const response = await fetch(
+		`https://www.googleapis.com/drive/v2/files/${fileId}/permissions`,
+		{
+			method: 'POST',
+			body,
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				'Content-Type': 'application/json',
+			},
+		},
+	);
+	return response;
 };
