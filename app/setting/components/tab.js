@@ -5,8 +5,8 @@ export const Tab = (label, isActive, onClick) => {
 		style: {
 			flex: '1',
 			boxShadow: 'none',
-			background: isActive ? '#0088EE' : '#FFF',
-			color: isActive ? '#FFF' : '#0088EE',
+			background: isActive ? '#000' : '#FFF',
+			color: isActive ? '#FFF' : '#000',
 			display: 'inline',
 			fontSize: '12px',
 		},

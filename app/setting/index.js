@@ -4,6 +4,7 @@ import {
 	GOOGLE_API_REDIRECT_URI,
 } from '../google-api-constants';
 import { PrimaryButton } from './components/button';
+import { ContactList } from './components/contactList';
 import { Tabs } from './components/tabs';
 import { VisibleToast } from './components/toast';
 
@@ -43,7 +44,6 @@ AppSettingsPage({
 		const signInBtn = PrimaryButton({
 			label: 'Sign in',
 		});
-
 		const clearBtn = PrimaryButton({
 			label: 'Clear',
 			onClick: () => {
@@ -114,9 +114,7 @@ AppSettingsPage({
 			`Google Auth Data: ${JSON.stringify(this.state.googleAuthData)}`,
 		);
 
-		const list = props.settingsStorage.getItem('sharedList').map((email) => {
-			return Text({ style: { fontSize: '12px' } }, email);
-		});
+		const list = props.settingsStorage.getItem('sharedList') || [];
 
 		const authView = Auth({
 			label: signInBtn,
@@ -155,7 +153,7 @@ AppSettingsPage({
 
 		const tabViews = {
 			Settings: userSignedIn ? [clearDiv, shareEmailInput] : authView,
-			Contacts: list,
+			Contacts: ContactList(list),
 			About: Text({ style: { fontSize: '12px' } }, 'TODO'),
 		};
 		return Section(
@@ -165,6 +163,7 @@ AppSettingsPage({
 				},
 			},
 			[
+				//addedUserToast,
 				Tabs(
 					currentTab,
 					props.settingsStorage.setItem.bind(props.settingsStorage),
