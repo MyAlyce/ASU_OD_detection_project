@@ -24,6 +24,9 @@ AppSettingsPage({
 		if (this.isTokenExpired() || !this.state.googleAuthData) {
 			this.state.googleAuthData = null;
 		}
+		if (!props.settingsStorage.getItem('activeTab')) {
+			props.settingsStorage.setItem('activeTab', 'Settings');
+		}
 		console.log('state:', this.state);
 	},
 	build(props) {
@@ -160,6 +163,7 @@ AppSettingsPage({
 			visible: true,
 		});
 
+		const currentTab = props.settingsStorage.getItem('activeTab');
 		return Section(
 			{
 				style: {
@@ -167,18 +171,26 @@ AppSettingsPage({
 				},
 			},
 			[
-				Tabs('Settings'),
-				View(
-					{
-						style: {
-							display: 'flex',
-							flexDirection: 'column',
-							gap: '10px',
-						},
-					},
-					[userSignedIn ? signedInView : authDiv],
+				Tabs(
+					currentTab,
+					props.settingsStorage.setItem.bind(props.settingsStorage),
 				),
-				View({ style: { display: 'flex', flexDirection: 'column' } }, [list]),
+				currentTab === 'Settings'
+					? View(
+							{
+								style: {
+									display: 'flex',
+									flexDirection: 'column',
+									gap: '10px',
+								},
+							},
+							[userSignedIn ? signedInView : authDiv],
+						)
+					: currentTab === 'Contacts'
+						? View({ style: { display: 'flex', flexDirection: 'column' } }, [
+								list,
+							])
+						: Text({ style: { fontSize: '12px' } }, 'About TODO'),
 			],
 		);
 	},

@@ -1,10 +1,7 @@
-const setActiveTab = (tab) => {
-	console.log('Active tab is: ', tab);
-};
-export default Tab = (label, isActive) => {
+export default Tab = (label, isActive, onClick) => {
 	const btn = Button({
 		label,
-		onClick: setActiveTab(label),
+		onClick,
 		style: {
 			flex: '1',
 			boxShadow: 'none',
