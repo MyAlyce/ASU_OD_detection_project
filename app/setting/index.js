@@ -4,6 +4,7 @@ import {
 	GOOGLE_API_REDIRECT_URI,
 } from '../google-api-constants';
 import PrimaryButton from './components/button';
+import Tab from './components/tab';
 
 AppSettingsPage({
 	state: {
@@ -25,6 +26,7 @@ AppSettingsPage({
 		console.log('state:', this.state);
 	},
 	build(props) {
+		console.log('re-render');
 		this.setState(props);
 
 		const nowTag = new Date().toISOString().substring(0, 19);
@@ -65,17 +67,24 @@ AppSettingsPage({
 			placeholder: 'Enter email address...',
 			onChange: async (value) => {
 				console.log('emailInput', value);
-				await shareFilesWithEmail(
+				const data = await shareFilesWithEmail(
 					value,
 					this.state.googleAuthData.access_token,
 				);
+				if (data.error) {
+					props.settingsStorage.setItem('shareError', true);
+					return;
+				}
+				const currentList = props.settingsStorage.getItem('sharedList') || [];
+				currentList.push(value);
+				props.settingsStorage.setItem('sharedList', currentList);
 			},
 			subStyle: {
 				border: 'thin rgba(0,0,0,0.1) solid',
 				borderRadius: '8px',
 				boxSizing: 'content-box',
 				color: '#000',
-				height: '1.5em',
+				height: '.8em',
 				lineHeight: '1.5em',
 				marginTop: '-16px',
 				padding: '8px',
@@ -99,6 +108,10 @@ AppSettingsPage({
 			},
 			`Google Auth Data: ${JSON.stringify(this.state.googleAuthData)}`,
 		);
+
+		const list = props.settingsStorage.getItem('sharedList').map((email) => {
+			return Text({ style: { fontSize: '12px' } }, email);
+		});
 
 		const authDiv = Auth({
 			label: signInBtn,
@@ -135,16 +148,36 @@ AppSettingsPage({
 
 		const signedInView = [clearDiv, shareEmailInput];
 
-		return View(
+		const addedUserToast = Toast({
+			message: 'User added',
+			duration: 5000,
+			visible: true,
+		});
+
+		const failedToAddUserToast = Toast({
+			message: 'Failed to add user',
+			visible: true,
+		});
+
+		return Section(
 			{
 				style: {
-					padding: '20px',
-					display: 'flex',
-					flexDirection: 'column',
-					gap: '10px',
+					padding: '10px',
 				},
 			},
-			[userSignedIn ? signedInView : authDiv],
+			[
+				View(
+					{
+						style: {
+							display: 'flex',
+							flexDirection: 'column',
+							gap: '10px',
+						},
+					},
+					[userSignedIn ? signedInView : authDiv],
+				),
+				View({ style: { display: 'flex', flexDirection: 'column' } }, [list]),
+			],
 		);
 	},
 
@@ -191,7 +224,7 @@ const requestGoogleAuthData = async (authResponse) => {
 };
 
 const shareFilesWithEmail = async (address, accessToken) => {
-	const fileId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGg,RiN3Ayp4fxYtzU'; // todo remove hardcode, share with folder
+	const fileId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // todo remove hardcode, share with folder
 	const body = JSON.stringify({
 		role: 'reader',
 		type: 'user',
@@ -209,5 +242,5 @@ const shareFilesWithEmail = async (address, accessToken) => {
 			},
 		},
 	);
-	return response;
+	return await response.json();
 };
