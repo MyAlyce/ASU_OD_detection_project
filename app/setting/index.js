@@ -3,10 +3,11 @@ import {
 	GOOGLE_API_CLIENT_SECRET,
 	GOOGLE_API_REDIRECT_URI,
 } from '../google-api-constants';
-import { PrimaryButton } from './components/button';
 import { ContactList } from './components/contactList';
+import { PrimaryButton } from './components/button';
 import { Tabs } from './components/tabs';
 import { VisibleToast } from './components/toast';
+import { shareFilesWithEmail, requestGoogleAuthData } from './util/google';
 
 AppSettingsPage({
 	state: {
@@ -72,17 +73,17 @@ AppSettingsPage({
 			placeholder: 'Enter email address...',
 			onChange: async (value) => {
 				console.log('emailInput', value);
-				const data = await shareFilesWithEmail(
+				const result = await shareFilesWithEmail(
 					value,
 					this.state.googleAuthData.access_token,
 				);
-				if (data.error) {
+				if (!result.success) {
 					props.settingsStorage.setItem('shareError', true);
 					return;
 				}
-				const currentList = props.settingsStorage.getItem('sharedList') || [];
-				currentList.push(value);
-				props.settingsStorage.setItem('sharedList', currentList);
+				const currentList = props.settingsStorage.getItem('contactsList') || {};
+				currentList[value] = result.permissionId;
+				props.settingsStorage.setItem('contactsList', currentList);
 			},
 			subStyle: {
 				border: 'thin rgba(0,0,0,0.1) solid',
@@ -114,7 +115,8 @@ AppSettingsPage({
 			`Google Auth Data: ${JSON.stringify(this.state.googleAuthData)}`,
 		);
 
-		const list = props.settingsStorage.getItem('sharedList') || [];
+		const list = props.settingsStorage.getItem('contactsList') || {};
+		console.log('list is', list);
 
 		const authView = Auth({
 			label: signInBtn,
@@ -153,7 +155,11 @@ AppSettingsPage({
 
 		const tabViews = {
 			Settings: userSignedIn ? [clearDiv, shareEmailInput] : authView,
-			Contacts: ContactList(list),
+			Contacts: ContactList(
+				list,
+				this.state.googleAuthData.access_token,
+				props.settingsStorage.setItem.bind(props.settingsStorage),
+			),
 			About: Text({ style: { fontSize: '12px' } }, 'TODO'),
 		};
 		return Section(
@@ -191,61 +197,4 @@ AppSettingsPage({
 		const expiresAt = new Date(authData.expires_at);
 		return now >= expiresAt;
 	},
-
-	onDestroy() {
-		console.log('destroy');
-	},
 });
-
-/**
- * Request Google Auth Data from Google API after receiving auth code
- * @param authResponse the auth code from Google API
- * @returns access token and other data for using API
- */
-const requestGoogleAuthData = async (authResponse) => {
-	const params = {
-		grant_type: 'authorization_code',
-		client_id: GOOGLE_API_CLIENT_ID,
-		client_secret: GOOGLE_API_CLIENT_SECRET,
-		redirect_uri: GOOGLE_API_REDIRECT_URI,
-		code: authResponse.code,
-	};
-
-	const body = Object.keys(params)
-		.map(
-			(key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`,
-		)
-		.join('&');
-
-	// console.log(body)
-	const data = await fetch('https://oauth2.googleapis.com/token', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
-		},
-		body: body,
-	});
-	return await data.json();
-};
-
-const shareFilesWithEmail = async (address, accessToken) => {
-	const fileId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // todo remove hardcode, share with folder
-	const body = JSON.stringify({
-		role: 'reader',
-		type: 'user',
-		value: address,
-	});
-
-	const response = await fetch(
-		`https://www.googleapis.com/drive/v2/files/${fileId}/permissions`,
-		{
-			method: 'POST',
-			body,
-			headers: {
-				Authorization: `Bearer ${accessToken}`,
-				'Content-Type': 'application/json',
-			},
-		},
-	);
-	return await response.json();
-};

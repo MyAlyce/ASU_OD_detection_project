@@ -1,16 +1,38 @@
-import { PrimaryButton, XButton } from './button';
+import { removeFilePermissionById } from '../util/google';
+import { XButton } from './button';
 
-export const ContactList = (contactList) => {
-	console.log(contactList);
-	const list = contactList.map((c, idx) => Contact(c, idx));
+/**
+ *
+ * @param {object} contacts list of contacts
+ * @returns {Array<Contact>} list of Contact elements to display
+ */
+export const ContactList = (contacts, accessToken, setItem) => {
+	console.log('contacts:', contacts);
+
+	const contactsMap = new Map(Object.entries(contacts));
+	const list = [];
+	for (const [contact, permissionId] of contactsMap) {
+		list.push(
+			Contact(contact, () => {
+				removeFilePermissionById(permissionId, accessToken).then((result) => {
+					if (result.success) {
+						console.log('Successfully removed contact:', contact);
+						contactsMap.delete(contact);
+						const updatedContacts = Object.fromEntries(contactsMap);
+						setItem('contactsList', updatedContacts);
+					} else {
+						console.error('Failed to remove contact:', contact);
+					}
+				});
+			}),
+		);
+	}
 
 	return list;
 };
 
-const Contact = (contact, idx) => {
-	const removeContact = XButton(() => {
-		console.log('remove contact:', contact);
-	});
+const Contact = (contact, onClick) => {
+	const removeContact = XButton(onClick);
 	return View({ style: { display: 'flex', gap: '10px' } }, [
 		contact,
 		removeContact,
