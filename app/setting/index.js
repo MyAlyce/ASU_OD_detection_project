@@ -47,27 +47,22 @@ AppSettingsPage({
 		const signInBtn = PrimaryButton({
 			label: 'Sign in',
 		});
-		const clearBtn = PrimaryButton({
-			label: 'Clear',
+		const signOutBtn = PrimaryButton({
+			label: 'Sign out',
 			onClick: () => {
-				console.log(
-					'before clear',
-					this.state.props.settingsStorage.toObject(),
-				);
 				props.settingsStorage.setItem('googleAuthData', null);
 				props.settingsStorage.setItem('googleAuthCode', null);
 				this.state.googleAuthData = '';
-				console.log('after clear', this.state.props.settingsStorage.toObject());
 			},
 		});
 
-		const clearDiv = View(
+		const signOutDiv = View(
 			{
 				style: {
 					display: 'inline',
 				},
 			},
-			clearBtn,
+			signOutBtn,
 		);
 
 		const shareEmailInput = Input(
@@ -124,7 +119,7 @@ AppSettingsPage({
 		const failedToAddUserToast = VisibleToast('Failed to add user');
 
 		const tabViews = {
-			Settings: isUserSignedIn ? [clearDiv, shareEmailInput] : authView,
+			Settings: isUserSignedIn ? [shareEmailInput, signOutDiv] : authView,
 			Contacts: ContactList(
 				contactsList,
 				this.state.googleAuthData.access_token,
