@@ -5,6 +5,7 @@ import {
 } from '../google-api-constants';
 import PrimaryButton from './components/button';
 import Tab from './components/tab';
+import Tabs from './components/tabs';
 
 AppSettingsPage({
 	state: {
@@ -166,6 +167,7 @@ AppSettingsPage({
 				},
 			},
 			[
+				Tabs('Settings'),
 				View(
 					{
 						style: {
