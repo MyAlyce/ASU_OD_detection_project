@@ -1,8 +1,8 @@
-import Tab from './tab';
+import { Tab } from './tab';
 
 const tabs = ['Settings', 'Contacts', 'About'];
 
-export default Tabs = (activeTab, setActiveTab) => {
+export const Tabs = (activeTab, setActiveTab) => {
 	const tabButtons = tabs.map((tabName, _index) => {
 		const isActive = tabName === activeTab;
 		return Tab(tabName, isActive, () => setActiveTab('activeTab', tabName));

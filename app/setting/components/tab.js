@@ -1,4 +1,4 @@
-export default Tab = (label, isActive, onClick) => {
+export const Tab = (label, isActive, onClick) => {
 	const btn = Button({
 		label,
 		onClick,

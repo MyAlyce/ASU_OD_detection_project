@@ -1,4 +1,4 @@
-export default PrimaryButton = ({ label, onClick }) => {
+export const PrimaryButton = ({ label, onClick }) => {
 	return Button({
 		label,
 		onClick,

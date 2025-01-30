@@ -3,9 +3,9 @@ import {
 	GOOGLE_API_CLIENT_SECRET,
 	GOOGLE_API_REDIRECT_URI,
 } from '../google-api-constants';
-import PrimaryButton from './components/button';
-import Tab from './components/tab';
-import Tabs from './components/tabs';
+import { PrimaryButton } from './components/button';
+import { Tabs } from './components/tabs';
+import { VisibleToast } from './components/toast';
 
 AppSettingsPage({
 	state: {
@@ -37,6 +37,8 @@ AppSettingsPage({
 		if (props.settingsStorage.getItem('now') !== nowTag)
 			props.settingsStorage.setItem('now', nowTag);
 
+		const currentTab = props.settingsStorage.getItem('activeTab');
+
 		const userSignedIn = !!this.state.googleAuthData;
 		const signInBtn = PrimaryButton({
 			label: 'Sign in',
@@ -49,7 +51,6 @@ AppSettingsPage({
 					'before clear',
 					this.state.props.settingsStorage.toObject(),
 				);
-				// this.state.props.settingsStorage.clear();
 				props.settingsStorage.setItem('googleAuthData', null);
 				props.settingsStorage.setItem('googleAuthCode', null);
 				this.state.googleAuthData = '';
@@ -117,7 +118,7 @@ AppSettingsPage({
 			return Text({ style: { fontSize: '12px' } }, email);
 		});
 
-		const authDiv = Auth({
+		const authView = Auth({
 			label: signInBtn,
 			authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
 			requestTokenUrl: 'https://oauth2.googleapis.com/token',
@@ -136,7 +137,6 @@ AppSettingsPage({
 			},
 			onReturn: async (authBody) => {
 				console.log('onReturn', authBody);
-				// this.state.props.settingsStorage.setItem('googleAuthCode', authBody.code)
 				const authData = await requestGoogleAuthData(authBody);
 				authData.requested_at = new Date();
 				authData.expires_at = new Date(
@@ -150,20 +150,14 @@ AppSettingsPage({
 			},
 		});
 
-		const signedInView = [clearDiv, shareEmailInput];
+		const addedUserToast = VisibleToast('User added');
+		const failedToAddUserToast = VisibleToast('Failed to add user');
 
-		const addedUserToast = Toast({
-			message: 'User added',
-			duration: 5000,
-			visible: true,
-		});
-
-		const failedToAddUserToast = Toast({
-			message: 'Failed to add user',
-			visible: true,
-		});
-
-		const currentTab = props.settingsStorage.getItem('activeTab');
+		const tabViews = {
+			Settings: userSignedIn ? [clearDiv, shareEmailInput] : authView,
+			Contacts: list,
+			About: Text({ style: { fontSize: '12px' } }, 'TODO'),
+		};
 		return Section(
 			{
 				style: {
@@ -175,22 +169,16 @@ AppSettingsPage({
 					currentTab,
 					props.settingsStorage.setItem.bind(props.settingsStorage),
 				),
-				currentTab === 'Settings'
-					? View(
-							{
-								style: {
-									display: 'flex',
-									flexDirection: 'column',
-									gap: '10px',
-								},
-							},
-							[userSignedIn ? signedInView : authDiv],
-						)
-					: currentTab === 'Contacts'
-						? View({ style: { display: 'flex', flexDirection: 'column' } }, [
-								list,
-							])
-						: Text({ style: { fontSize: '12px' } }, 'About TODO'),
+				View(
+					{
+						style: {
+							display: 'flex',
+							flexDirection: 'column',
+							gap: '10px',
+						},
+					},
+					tabViews[currentTab],
+				),
 			],
 		);
 	},
@@ -203,6 +191,10 @@ AppSettingsPage({
 		const now = new Date();
 		const expiresAt = new Date(authData.expires_at);
 		return now >= expiresAt;
+	},
+
+	onDestroy() {
+		console.log('destroy');
 	},
 });
 
