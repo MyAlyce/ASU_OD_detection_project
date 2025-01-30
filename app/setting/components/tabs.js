@@ -6,10 +6,7 @@ export const Tabs = (activeTab, setActiveTab) => {
 		return Tab(tabName, isActive, () => setActiveTab('activeTab', tabName));
 	});
 
-	return View(
-		{ style: { display: 'flex', flexDirection: 'row', marginBottom: '15px' } },
-		tabButtons,
-	);
+	return View({ style: { display: 'flex', marginBottom: '15px' } }, tabButtons);
 };
 
 const Tab = (label, isActive, onClick) => {

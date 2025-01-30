@@ -8,6 +8,7 @@ import { PrimaryButton } from './components/button';
 import { Tabs } from './components/tabs';
 import { VisibleToast } from './components/toast';
 import { shareFilesWithEmail, requestGoogleAuthData } from './util/google';
+import { Input } from './components/textInput';
 
 AppSettingsPage({
 	state: {
@@ -40,8 +41,9 @@ AppSettingsPage({
 			props.settingsStorage.setItem('now', nowTag);
 
 		const currentTab = props.settingsStorage.getItem('activeTab');
+		const contactsList = props.settingsStorage.getItem('contactsList') || {};
 
-		const userSignedIn = !!this.state.googleAuthData;
+		const isUserSignedIn = !!this.state.googleAuthData;
 		const signInBtn = PrimaryButton({
 			label: 'Sign in',
 		});
@@ -68,10 +70,10 @@ AppSettingsPage({
 			clearBtn,
 		);
 
-		const shareEmailInput = TextInput({
-			label: 'Share with others',
-			placeholder: 'Enter email address...',
-			onChange: async (value) => {
+		const shareEmailInput = Input(
+			'Share with others',
+			'Enter email address...',
+			async (value) => {
 				console.log('emailInput', value);
 				const result = await shareFilesWithEmail(
 					value,
@@ -81,42 +83,10 @@ AppSettingsPage({
 					props.settingsStorage.setItem('shareError', true);
 					return;
 				}
-				const currentList = props.settingsStorage.getItem('contactsList') || {};
-				currentList[value] = result.permissionId;
-				props.settingsStorage.setItem('contactsList', currentList);
+				contactsList[value] = result.permissionId;
+				props.settingsStorage.setItem('contactsList', contactsList);
 			},
-			subStyle: {
-				border: 'thin rgba(0,0,0,0.1) solid',
-				borderRadius: '8px',
-				boxSizing: 'content-box',
-				color: '#000',
-				height: '.8em',
-				lineHeight: '1.5em',
-				marginTop: '-16px',
-				padding: '8px',
-				paddingTop: '1.2em',
-			},
-			labelStyle: {
-				color: '#555',
-				fontSize: '0.8em',
-				paddingLeft: '8px',
-				position: 'relative',
-				top: '0.2em',
-			},
-		});
-
-		const tt = Text(
-			{
-				style: {
-					fontSize: '12px',
-					marginTop: '10px',
-				},
-			},
-			`Google Auth Data: ${JSON.stringify(this.state.googleAuthData)}`,
 		);
-
-		const list = props.settingsStorage.getItem('contactsList') || {};
-		console.log('list is', list);
 
 		const authView = Auth({
 			label: signInBtn,
@@ -154,9 +124,9 @@ AppSettingsPage({
 		const failedToAddUserToast = VisibleToast('Failed to add user');
 
 		const tabViews = {
-			Settings: userSignedIn ? [clearDiv, shareEmailInput] : authView,
+			Settings: isUserSignedIn ? [clearDiv, shareEmailInput] : authView,
 			Contacts: ContactList(
-				list,
+				contactsList,
 				this.state.googleAuthData.access_token,
 				props.settingsStorage.setItem.bind(props.settingsStorage),
 			),
