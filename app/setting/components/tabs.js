@@ -1,3 +1,5 @@
+import { useSettings } from '../context/SettingsContext';
+
 const tabs = ['Settings', 'Contacts', 'About'];
 
 /**
@@ -6,7 +8,9 @@ const tabs = ['Settings', 'Contacts', 'About'];
  * @param {*} setSetting function to set the active tab
  * @returns
  */
-export const Tabs = (activeTab, store) => {
+export const Tabs = () => {
+	const store = useSettings();
+	const activeTab = store.getState().activeTab;
 	const tabButtons = tabs.map((tabName) => {
 		const isActive = tabName === activeTab;
 		return Tab(tabName, isActive, () => store.setState('activeTab', tabName));

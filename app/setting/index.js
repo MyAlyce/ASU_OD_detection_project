@@ -26,7 +26,7 @@ AppSettingsPage({
 	},
 	build(props) {
 		this.setState(props);
-		const store = createSettingsStore(props.settings, props.settingsStorage);
+		const store = createSettingsStore(props);
 		const currentTab = store.getState().activeTab;
 		const TabComponent = TAB_COMPONENTS[currentTab];
 		console.log('Showing tab:', currentTab);
@@ -37,7 +37,7 @@ AppSettingsPage({
 				},
 			},
 			[
-				Tabs(currentTab, store),
+				Tabs(),
 				View(
 					{
 						style: {
@@ -46,7 +46,7 @@ AppSettingsPage({
 							gap: '10px',
 						},
 					},
-					TabComponent(store),
+					TabComponent(),
 				),
 			],
 		);

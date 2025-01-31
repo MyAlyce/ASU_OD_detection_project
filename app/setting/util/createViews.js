@@ -66,6 +66,7 @@ export const createSignOutButton = (ctx) => {
 		onClick: () => {
 			ctx.setSetting('googleAuthData', null);
 			ctx.setSetting('googleAuthCode', null);
+			console.log('Signed out');
 		},
 	});
 	return signOutBtn;

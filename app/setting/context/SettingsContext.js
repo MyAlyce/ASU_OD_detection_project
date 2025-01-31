@@ -5,8 +5,13 @@
  * @param {object} storage settingsStorage object
  * @returns
  */
-export const createSettingsStore = (settings, settingsStore) => {
-	return {
+let globalSettingsStore = null;
+
+export const createSettingsStore = ({
+	settings,
+	settingsStorage: settingsStore,
+}) => {
+	const store = {
 		setState(key, value) {
 			settingsStore.setItem(key, value);
 		},
@@ -20,4 +25,13 @@ export const createSettingsStore = (settings, settingsStore) => {
 			return authData?.access_token || '';
 		},
 	};
+	globalSettingsStore = store;
+	return store;
+};
+
+export const useSettings = () => {
+	if (!globalSettingsStore) {
+		throw new Error('Settings store must be initialized before use');
+	}
+	return globalSettingsStore;
 };
