@@ -27,7 +27,7 @@ AppSettingsPage({
 	build(props) {
 		this.setState(props);
 		const store = createSettingsStore(props);
-		const currentTab = store.getState().activeTab;
+		const currentTab = store.getState().activeTab || 'Settings';
 		const TabComponent = TAB_COMPONENTS[currentTab];
 		console.log('Showing tab:', currentTab);
 		return Section(

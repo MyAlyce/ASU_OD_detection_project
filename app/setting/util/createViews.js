@@ -1,11 +1,12 @@
+import { Buffer } from 'buffer';
 import {
 	GOOGLE_API_CLIENT_ID,
 	GOOGLE_API_CLIENT_SECRET,
 	GOOGLE_API_REDIRECT_URI,
 } from '../../google-api-constants';
+import { Input } from '../components/textInput';
 import { PrimaryButton } from '../components/button';
 import { shareFilesWithEmail, requestGoogleAuthData } from '../util/google';
-import { Input } from '../components/textInput';
 import { useSettings } from '../context/SettingsContext';
 
 export const createAuthView = () => {
@@ -16,7 +17,7 @@ export const createAuthView = () => {
 		}),
 		authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
 		requestTokenUrl: 'https://oauth2.googleapis.com/token',
-		scope: 'https://www.googleapis.com/auth/drive',
+		scope: 'openid email https://www.googleapis.com/auth/drive',
 		clientId: GOOGLE_API_CLIENT_ID,
 		clientSecret: GOOGLE_API_CLIENT_SECRET,
 		oAuthParams: {
@@ -32,10 +33,15 @@ export const createAuthView = () => {
 		onReturn: async (authBody) => {
 			console.log('onReturn', authBody);
 			const authData = await requestGoogleAuthData(authBody);
+			console.log('authData', authData);
 			authData.requested_at = new Date();
 			authData.expires_at = new Date(
 				authData.requested_at.getTime() + authData.expires_in * 1000,
 			);
+			const id = JSON.parse(
+				Buffer.from(authData.id_token.split('.')[1], 'base64'),
+			);
+			authData.email = id.email;
 			settings.setSetting('googleAuthData', JSON.stringify(authData));
 			console.log('authData', authData);
 		},
