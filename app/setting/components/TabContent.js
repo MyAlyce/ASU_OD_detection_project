@@ -15,8 +15,8 @@ export const SettingsTab = () => {
 	return View(
 		{ style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
 		[
-			isUserSignedIn ? createShareEmailInput(store) : createAuthView(store),
-			isUserSignedIn && View({}, createSignOutButton(store)),
+			isUserSignedIn ? createShareEmailInput() : createAuthView(),
+			isUserSignedIn && View({}, createSignOutButton()),
 		],
 	);
 };

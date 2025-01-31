@@ -6,8 +6,10 @@ import {
 import { PrimaryButton } from '../components/button';
 import { shareFilesWithEmail, requestGoogleAuthData } from '../util/google';
 import { Input } from '../components/textInput';
+import { useSettings } from '../context/SettingsContext';
 
-export const createAuthView = (ctx) => {
+export const createAuthView = () => {
+	const settings = useSettings();
 	const authView = Auth({
 		label: PrimaryButton({
 			label: 'Sign in',
@@ -34,15 +36,16 @@ export const createAuthView = (ctx) => {
 			authData.expires_at = new Date(
 				authData.requested_at.getTime() + authData.expires_in * 1000,
 			);
-			ctx.setSetting('googleAuthData', JSON.stringify(authData));
+			settings.setSetting('googleAuthData', JSON.stringify(authData));
 			console.log('authData', authData);
 		},
 	});
 	return authView;
 };
 
-export const createShareEmailInput = (ctx) => {
-	const contactsList = ctx.getSetting('contactsList') || {};
+export const createShareEmailInput = () => {
+	const settings = useSettings();
+	const contactsList = settings.getSetting('contactsList') || {};
 	const shareEmailInput = Input(
 		'Share with others',
 		'Enter email address...',
@@ -50,22 +53,23 @@ export const createShareEmailInput = (ctx) => {
 			console.log('emailInput', value);
 			const result = await shareFilesWithEmail(value, ctx.getAuthToken());
 			if (!result.success) {
-				ctx.setSetting('shareError', true);
+				settings.setSetting('shareError', true);
 				return;
 			}
 			contactsList[value] = result.permissionId;
-			ctx.setSetting('contactsList', contactsList);
+			settings.setSetting('contactsList', contactsList);
 		},
 	);
 	return shareEmailInput;
 };
 
-export const createSignOutButton = (ctx) => {
+export const createSignOutButton = () => {
+	const settings = useSettings();
 	const signOutBtn = PrimaryButton({
 		label: 'Sign out',
 		onClick: () => {
-			ctx.setSetting('googleAuthData', null);
-			ctx.setSetting('googleAuthCode', null);
+			settings.setSetting('googleAuthData', null);
+			settings.setSetting('googleAuthCode', null);
 			console.log('Signed out');
 		},
 	});
