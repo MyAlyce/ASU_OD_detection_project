@@ -51,19 +51,20 @@ export const createAuthView = () => {
 
 export const createShareEmailInput = () => {
 	const settings = useSettings();
-	const contactsList = settings.getSetting('contactsList') || {};
+	const email = settings.getEmail();
+	const contactsList = settings.getSetting(`contactsList_${email}`) || {};
 	const shareEmailInput = Input(
 		'Share with others',
 		'Enter email address...',
 		async (value) => {
 			console.log('emailInput', value);
-			const result = await shareFilesWithEmail(value, ctx.getAuthToken());
+			const result = await shareFilesWithEmail(value, settings.getAuthToken());
 			if (!result.success) {
 				settings.setSetting('shareError', true);
 				return;
 			}
 			contactsList[value] = result.permissionId;
-			settings.setSetting('contactsList', contactsList);
+			settings.setSetting(`contactsList_${email}`, contactsList);
 		},
 	);
 	return shareEmailInput;

@@ -24,6 +24,10 @@ export const createSettingsStore = ({
 			const authData = JSON.parse(settingsStore.getItem('googleAuthData'));
 			return authData?.access_token || '';
 		},
+		getEmail: () => {
+			const authData = JSON.parse(settingsStore.getItem('googleAuthData'));
+			return authData?.email;
+		},
 	};
 	globalSettingsStore = store;
 	return store;

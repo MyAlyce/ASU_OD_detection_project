@@ -15,7 +15,8 @@ export const ContactList = () => {
 		console.error('No access token found');
 		return [];
 	}
-	const contacts = settings.getSetting('contactsList') || {};
+	const email = settings.getEmail();
+	const contacts = settings.getSetting(`contactsList_${email}`) || {};
 
 	const contactsMap = new Map(Object.entries(contacts));
 	const list = [];
@@ -27,7 +28,7 @@ export const ContactList = () => {
 						console.log('Successfully removed contact:', contact);
 						contactsMap.delete(contact);
 						const updatedContacts = Object.fromEntries(contactsMap);
-						settings.setSetting('contactsList', updatedContacts);
+						settings.setSetting(`contactsList_${email}`, updatedContacts);
 					} else {
 						console.error('Failed to remove contact:', contact);
 					}
@@ -40,9 +41,8 @@ export const ContactList = () => {
 };
 
 const Contact = (contact, onClick) => {
-	const removeContact = XButton(onClick);
 	return View({ style: { display: 'flex', gap: '10px' } }, [
 		contact,
-		removeContact,
+		XButton(onClick),
 	]);
 };
