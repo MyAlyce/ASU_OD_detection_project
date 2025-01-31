@@ -1,12 +1,16 @@
 import { ContactList } from './contactList';
+import {
+	createAuthView,
+	createShareEmailInput,
+	createSignOutButton,
+} from '../util/createViews';
 
 export const SettingsTab = (store) => {
 	const state = store.getState();
-
-	return View({}, [
-		state.isUserSignedIn ? state.shareEmailInput : state.authView,
+	return View({ style: { display: 'flex', flexDirection: 'column' } }, [
+		state.isUserSignedIn ? createShareEmailInput(store) : createAuthView(store),
 		state.isUserSignedIn &&
-			View({ style: { display: 'inline' } }, state.signOutBtn),
+			View({ style: { display: 'inline' } }, createSignOutButton(store)),
 	]);
 };
 

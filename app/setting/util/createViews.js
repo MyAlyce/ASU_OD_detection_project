@@ -42,7 +42,6 @@ export const createAuthView = (ctx) => {
 };
 
 export const createShareEmailInput = (ctx) => {
-	const ctx = getStore();
 	const contactsList = ctx.getSetting('contactsList') || {};
 	const shareEmailInput = Input(
 		'Share with others',

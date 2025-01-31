@@ -1,11 +1,6 @@
 import { TAB_COMPONENTS } from './components/TabContent';
 import { Tabs } from './components/tabs';
 import { createSettingsStore } from './context/SettingsContext';
-import {
-	createAuthView,
-	createShareEmailInput,
-	createSignOutButton,
-} from './util/createViews';
 
 AppSettingsPage({
 	state: {
@@ -18,12 +13,12 @@ AppSettingsPage({
 		const storedAuthData = JSON.parse(
 			props.settingsStorage.getItem('googleAuthData'),
 		);
-		if (storedAuthData) {
-			this.state.googleAuthData = storedAuthData;
-		}
+		this.state.googleAuthData = storedAuthData || null;
+
 		if (this.isTokenExpired() || !this.state.googleAuthData) {
 			this.state.googleAuthData = null;
 		}
+
 		if (!props.settingsStorage.getItem('activeTab')) {
 			props.settingsStorage.setItem('activeTab', 'Settings');
 		}
@@ -32,19 +27,12 @@ AppSettingsPage({
 	build(props) {
 		this.setState(props);
 		const store = createSettingsStore(props.settingsStorage);
-
-		const currentTab = store.getSetting('activeTab') || 'Settings';
-		const isUserSignedIn = !!this.state.googleAuthData;
-
 		store.setState({
-			isUserSignedIn,
-			authView: createAuthView(store),
-			shareEmailInput: createShareEmailInput(store),
-			signOutBtn: createSignOutButton(store),
+			isUserSignedIn: !!this.state.googleAuthData,
 		});
-
+		console.log('store:', store.getState());
+		const currentTab = store.getSetting('activeTab') || 'Settings';
 		const TabComponent = TAB_COMPONENTS[currentTab];
-
 		return Section(
 			{
 				style: {

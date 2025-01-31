@@ -1,9 +1,6 @@
 export const createSettingsStore = (storage) => {
 	const state = {
 		isUserSignedIn: false,
-		authView: null,
-		shareEmailInput: null,
-		signOutBtn: null,
 	};
 
 	return {
