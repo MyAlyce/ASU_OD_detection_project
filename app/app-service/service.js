@@ -55,35 +55,53 @@ AppService(
 			// 	notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
 			// });
 
-			
-			googleApi.searchGoogleDriveFolder('test') // Function to search for folders
-			.then((existingFolders) => {
-				if (existingFolders.length > 0) {
-				console.log('Folder already exists:', existingFolders[0]);
-				notifyWatch(`Folder already exists (ID: ${existingFolders[0].id})`);
-				storage.setKey('zeppGoogleFolderId', existingFolders[0].id); // Store existing folder ID incase failed to set before
-				} 
-				else 
-				{
-					// Create a new folder if it doesn't exist
-				return googleApi.createNewGoogleDriveFolder('test')
-					.then((response) => {
-					console.log('New folder created:', response);
-					storage.setKey('zeppGoogleFolderId', response.id);
-					notifyWatch(`Created new Google Drive folder: ${response.name} (ID: ${response.id})`);
-					})
-					.catch((error) => {
-						console.error('Failed to create new Google Drive folder:', error);
-						notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
-					});
-		
-				}
-			})
-			.catch((error) => {
-				console.error('Error checking or creating folder:', error);
-				notifyWatch(`Error: ${error.message}`);
-			});
 
+			// A working way to search for folders; but uses api calls so more expesnive than just checking local storage
+
+			// googleApi.searchGoogleDriveFolder('test') 
+			// .then((existingFolders) => {
+			// 	if (existingFolders.length > 0) {
+			// 	console.log('Folder already exists:', existingFolders[0]);
+			// 	notifyWatch(`Folder already exists (ID: ${existingFolders[0].id})`); 
+			// 	storage.setKey('zeppGoogleFolderId', existingFolders[0].id); // Store existing folder ID incase failed to set before
+			// 	} 
+			// 	else 
+			// 	{
+			// 		// Create a new folder if it doesn't exist
+			// 	return googleApi.createNewGoogleDriveFolder('test')
+			// 		.then((response) => {
+			// 		console.log('New folder created:', response);
+			// 		storage.setKey('zeppGoogleFolderId', response.id);
+			// 		notifyWatch(`Created new Google Drive folder: ${response.name} (ID: ${response.id})`);
+			// 		})
+			// 		.catch((error) => {
+			// 			console.error('Failed to create new Google Drive folder:', error);
+			// 			notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
+			// 		});
+		
+			// 	}
+			// })
+			// .catch((error) => {
+			// 	console.error('Error checking or creating folder:', error);
+			// 	notifyWatch(`Error: ${error.message}`);
+			// });
+
+
+			if (!storage.getKey('zeppGoogleFolderId')) { // this means a folder doesn't exist currently, so make a new one
+				googleApi.createNewGoogleDriveFolder('test')
+				.then((response) => {
+					console.log('New folder created:', response);
+
+					const zeppGoogleFolderId = response.id; 
+					storage.setKey('zeppGoogleFolderId', zeppGoogleFolderId);
+			
+					notifyWatch(`Created new Google Drive folder: ${response.name} (ID: ${response.id})`); 
+				})
+				.catch((error) => {
+					console.error('Failed to create new Google Drive folder:', error);
+					notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
+				});
+			}
 		
 
 			timeSensor.onPerMinute(() => {
