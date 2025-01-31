@@ -23,7 +23,7 @@ AppService(
 			notifyWatch(`Starting service, token is here? ${!!token}`);
 
 
-			// some example code that works below:
+			// some example code that works is below for reference:
 
 			// Create a new Google Sheet called "test"
 			//this just does it once when onInit() is invoked
@@ -54,6 +54,36 @@ AppService(
 			// 	console.error('Failed to create new Google Drive folder:', error);
 			// 	notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
 			// });
+
+			
+			googleApi.searchGoogleDriveFolder('test') // Function to search for folders
+			.then((existingFolders) => {
+				if (existingFolders.length > 0) {
+				console.log('Folder already exists:', existingFolders[0]);
+				notifyWatch(`Folder already exists (ID: ${existingFolders[0].id})`);
+				storage.setKey('zeppGoogleFolderId', existingFolders[0].id); // Store existing folder ID incase failed to set before
+				} 
+				else 
+				{
+					// Create a new folder if it doesn't exist
+				return googleApi.createNewGoogleDriveFolder('test')
+					.then((response) => {
+					console.log('New folder created:', response);
+					storage.setKey('zeppGoogleFolderId', response.id);
+					notifyWatch(`Created new Google Drive folder: ${response.name} (ID: ${response.id})`);
+					})
+					.catch((error) => {
+						console.error('Failed to create new Google Drive folder:', error);
+						notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
+					});
+		
+				}
+			})
+			.catch((error) => {
+				console.error('Error checking or creating folder:', error);
+				notifyWatch(`Error: ${error.message}`);
+			});
+
 		
 
 			timeSensor.onPerMinute(() => {
@@ -102,15 +132,23 @@ AppService(
 				const today = new Date();
 				const dateTitle = today.toISOString().split('T')[0]; // e.g., "2025-01-24"
 
+				// Get folder id to store sheet in
+				const folderId = storage.getKey('zeppGoogleFolderId');
+				if (!folderId) {
+					console.error("No folderId found in storage! Cannot create sheet.");
+					return;
+				  }
+
 				googleApi
-					.createNewGoogleSheet(`zepp ${dateTitle}`)
+					.createNewGoogleSheet(`zepp ${dateTitle}`, folderId)
 					.then((response) => {
 						this.log('New spreadsheet created:', response);
-						
+						this.log('Created spreadhseet in folder:', folderId);
+
 						const spreadsheetId = response.spreadsheetId; // get id of the new sheet
 						storage.setKey('currentSheetId', spreadsheetId); // save the id to storage
 
-						notifyWatch(`Created new Google Sheet: ${response.spreadsheetUrl}`);
+						notifyWatch(`Created new Google Sheet: ${response.spreadsheetUrl} in folder ${folderId}`);
 				})
 				.catch((error) => {
 					this.log('Failed to create a new Google Sheet', error.message);
