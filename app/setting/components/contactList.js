@@ -2,7 +2,7 @@ import { removeFilePermissionById } from '../util/google';
 import { XButton } from './button';
 
 /**
- *
+ * Creates a list of Contact elements to display
  * @param {object} contacts list of contacts
  * @returns {Array<Contact>} list of Contact elements to display
  */

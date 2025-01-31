@@ -26,13 +26,10 @@ AppSettingsPage({
 	},
 	build(props) {
 		this.setState(props);
-		const store = createSettingsStore(props.settingsStorage);
-		store.setState({
-			isUserSignedIn: !!this.state.googleAuthData,
-		});
-		console.log('store:', store.getState());
-		const currentTab = store.getSetting('activeTab') || 'Settings';
+		const store = createSettingsStore(props.settings, props.settingsStorage);
+		const currentTab = store.getState().activeTab;
 		const TabComponent = TAB_COMPONENTS[currentTab];
+		console.log('Showing tab:', currentTab);
 		return Section(
 			{
 				style: {
@@ -40,7 +37,7 @@ AppSettingsPage({
 				},
 			},
 			[
-				Tabs(currentTab, store.setSetting),
+				Tabs(currentTab, store),
 				View(
 					{
 						style: {

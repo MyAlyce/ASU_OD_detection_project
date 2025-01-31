@@ -1,9 +1,15 @@
 const tabs = ['Settings', 'Contacts', 'About'];
 
-export const Tabs = (activeTab, setSetting) => {
+/**
+ * Create the tabs for the settings page
+ * @param {string} activeTab the currently active tab
+ * @param {*} setSetting function to set the active tab
+ * @returns
+ */
+export const Tabs = (activeTab, store) => {
 	const tabButtons = tabs.map((tabName) => {
 		const isActive = tabName === activeTab;
-		return Tab(tabName, isActive, () => setSetting('activeTab', tabName));
+		return Tab(tabName, isActive, () => store.setState('activeTab', tabName));
 	});
 
 	return View({ style: { display: 'flex', marginBottom: '15px' } }, tabButtons);

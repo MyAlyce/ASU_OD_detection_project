@@ -5,6 +5,9 @@ import {
 	createSignOutButton,
 } from '../util/createViews';
 
+// This file should be used to define the different tabs shown in settings.
+// The tabs are defined as functions that return the pseudo-JSX for the tab content.
+
 export const SettingsTab = (store) => {
 	const state = store.getState();
 	return View({ style: { display: 'flex', flexDirection: 'column' } }, [
