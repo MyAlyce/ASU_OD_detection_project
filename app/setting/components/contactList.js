@@ -6,7 +6,7 @@ import { XButton } from './button';
  * @param {object} contacts list of contacts
  * @returns {Array<Contact>} list of Contact elements to display
  */
-export const ContactList = (contacts, accessToken, setItem) => {
+export const ContactList = (contacts, accessToken, setSetting) => {
 	console.log('contacts:', contacts);
 
 	const contactsMap = new Map(Object.entries(contacts));
@@ -19,7 +19,7 @@ export const ContactList = (contacts, accessToken, setItem) => {
 						console.log('Successfully removed contact:', contact);
 						contactsMap.delete(contact);
 						const updatedContacts = Object.fromEntries(contactsMap);
-						setItem('contactsList', updatedContacts);
+						setSetting('contactsList', updatedContacts);
 					} else {
 						console.error('Failed to remove contact:', contact);
 					}

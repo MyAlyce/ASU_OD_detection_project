@@ -1,9 +1,9 @@
 const tabs = ['Settings', 'Contacts', 'About'];
 
-export const Tabs = (activeTab, setActiveTab) => {
-	const tabButtons = tabs.map((tabName, _index) => {
+export const Tabs = (activeTab, setSetting) => {
+	const tabButtons = tabs.map((tabName) => {
 		const isActive = tabName === activeTab;
-		return Tab(tabName, isActive, () => setActiveTab('activeTab', tabName));
+		return Tab(tabName, isActive, () => setSetting('activeTab', tabName));
 	});
 
 	return View({ style: { display: 'flex', marginBottom: '15px' } }, tabButtons);

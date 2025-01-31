@@ -24,7 +24,6 @@ export const requestGoogleAuthData = async (authResponse) => {
 		)
 		.join('&');
 
-	// console.log(body)
 	const data = await fetch('https://oauth2.googleapis.com/token', {
 		method: 'POST',
 		headers: {
@@ -81,8 +80,5 @@ export const removeFilePermissionById = async (permissionId, accessToken) => {
 	if (!response.ok) {
 		throw new Error(`Failed to remove permission: ${response.statusText}`);
 	}
-
-	console.log('removed');
-
 	return { success: true };
 };
