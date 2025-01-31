@@ -129,9 +129,10 @@ export class GoogleApi {
 	 * Create a new Google Sheet
 	 *
 	 * @param {string} title The title of the new spreadsheet
-	 * @returns {Promise<object>} The response from the Google Sheets API with the spreadsheet details
+	 * @param {string} folderId The ID of the folder in which to create the new spreadsheet TODO add implementation for this later
+	 * @returns {Promise<object>} The response from the Google Sheets API with the created spreadsheet's details
 	 */
-	createNewGoogleSheet(title) {
+	createNewGoogleSheet(title, folderId=null) {
 		const url = 'https://sheets.googleapis.com/v4/spreadsheets';
 		const body = {
 			properties: {
@@ -165,4 +166,34 @@ export class GoogleApi {
 			});
 	}
 
+	/**
+	 * Creates a new folder in Google Drive.
+	 *
+	 * @param {string} folderName - The name of the new folder to create.
+	 * @returns {Promise<object>} - The response from the Google Drive API with the created folder's details
+	 */
+	createNewGoogleDriveFolder(folderName) {
+		return this.svc.httpRequest({
+			method: 'POST',
+			url: 'https://www.googleapis.com/drive/v3/files',
+			headers: {
+				Authorization: `Bearer ${this.accessToken}`,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				name: folderName,
+				mimeType: 'application/vnd.google-apps.folder',
+			}),
+		}).then(({ status, body }) => {
+			if (typeof body === 'string') {
+				body = JSON.parse(body);
+			}
+			if (status === 200 || status === 201) {
+				return body;
+			}
+			return Promise.reject(new Error(`Failed to create folder: ${body.error?.message || status}`));
+		});
+		
+	}
+	
 }

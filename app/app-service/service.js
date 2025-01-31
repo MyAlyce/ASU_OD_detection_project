@@ -22,6 +22,9 @@ AppService(
 			
 			notifyWatch(`Starting service, token is here? ${!!token}`);
 
+
+			// some example code that works below:
+
 			// Create a new Google Sheet called "test"
 			//this just does it once when onInit() is invoked
 
@@ -33,6 +36,25 @@ AppService(
 			// 	notifyWatch('Failed to create new Google Sheet');
 			// });
 
+
+			// Create a new Google Drive folder called "test"
+			//this just does it once when onInit() is invoked
+
+			// googleApi.createNewGoogleDriveFolder('test')
+			// .then((response) => {
+			// 	console.log('New folder created:', response);
+
+			// 	const zeppGoogleFolderId = response.id; 
+			// 	storage.setKey('zeppGoogleFolderId', zeppGoogleFolderId);
+		
+			// 	notifyWatch(`Created new Google Drive folder: ${response.name} (ID: ${response.id})`); 
+			// 	// TODO: response.id contains the folder ID; implement the createNewGoogleSheet function to use this later
+			// })
+			// .catch((error) => {
+			// 	console.error('Failed to create new Google Drive folder:', error);
+			// 	notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
+			// });
+		
 
 			timeSensor.onPerMinute(() => {
 				this.log(
@@ -73,6 +95,8 @@ AppService(
 				);
 
 				//also zepp hass ome inbuilt get date functions if u want https://docs.zepp.com/docs/reference/device-app-api/newAPI/sensor/Time/
+				// but the current way works fine for making title so i left it
+
 
 				// Generate the current date as the title
 				const today = new Date();
