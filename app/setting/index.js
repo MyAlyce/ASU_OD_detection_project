@@ -13,11 +13,17 @@ AppSettingsPage({
 	setState(props) {
 		console.log('setState', props);
 		this.state.props = props;
-		const storedAuthData = JSON.parse(
-			props.settingsStorage.getItem('googleAuthData'),
-		);
-		if (storedAuthData) {
+		try {
+			const storedAuthData = JSON.parse(
+				props.settingsStorage.getItem('googleAuthData'),
+			);
 			this.state.googleAuthData = storedAuthData;
+		} catch (e) {
+			console.error('Error parsing googleAuthData', e);
+			console.error(
+				'googleAuthData:',
+				props.settingsStorage.getItem('googleAuthData'),
+			);
 		}
 		if (this.isTokenExpired() || !this.state.googleAuthData) {
 			this.state.googleAuthData = null;
