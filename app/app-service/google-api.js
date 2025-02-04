@@ -1,9 +1,18 @@
 export class GoogleApi {
-	constructor(svc, accessToken, refreshToken, expiryDate) {
+	constructor(svc, accessToken, refreshToken, expiryDate, currentSheetId) {
 		this.svc = svc;
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
 		this.expiryDate = expiryDate;
+		this.currentSheetId = null;
+	}
+	
+	setSheetId(sheetId) { 
+		this.currentSheetId = sheetId; 
+	}
+
+	getSheetId() { 
+		return this.currentSheetId || '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // return only if not null, otherwise return '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU' <- zepptest
 	}
 
 	// Write a function to refresh the access token
@@ -71,7 +80,9 @@ export class GoogleApi {
 			];
 		});
 
-		const addHeaders = false;
+		//TODO not working rn
+		const addHeaders = (this.currentSheetId === null); // If we don't have a sheet ID, we're creating a new sheet and need to add headers. 
+
 		const formattedData = addHeaders ? [headers, ...dataRows] : dataRows;
 
 		return this.#internalSendDataToGoogleSheets(formattedData).then(
@@ -95,7 +106,7 @@ export class GoogleApi {
 	 */
 
 	#internalSendDataToGoogleSheets(values) {
-		const spreadsheetId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU';
+		const spreadsheetId = this.getSheetId();
 		const range = 'Sheet1!A1';
 
 		const body = {
@@ -156,6 +167,8 @@ export class GoogleApi {
 						body = JSON.parse(body);
 					}
 					console.log(`Spreadsheet "${title}" created successfully!`, body);
+
+					this.setSheetId(body.spreadsheetId); // Save the ID of the new sheet
 
 					if (folderId) {
 						return this.moveFileToFolder(body.spreadsheetId, folderId)

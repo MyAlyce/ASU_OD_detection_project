@@ -18,75 +18,12 @@ AppService(
 			const token = storage.getKey('token');
 			const refreshToken = storage.getKey('refreshToken');
 			const expiryDate = storage.getKey('expiresAt');
-			const googleApi = new GoogleApi(this, token, refreshToken, expiryDate);
-			
+			const googleApi = new GoogleApi(this, token, refreshToken, expiryDate, null); //the "null" is the sheetId instance variable of google-api.js, which is set at the time of sheet creation
+
 			notifyWatch(`Starting service, token is here? ${!!token}`);
 
-
-			// some example code that works is below for reference:
-
-			// Create a new Google Sheet called "test"
-			//this just does it once when onInit() is invoked
-
-			// googleApi.createNewGoogleSheet('test').then((response) => {
-			// 	console.log('New spreadsheet created:', response);
-			// 	notifyWatch(`Created new Google Sheet: ${response.spreadsheetUrl}`);
-			// }).catch((error) => {
-			// 	console.error('Failed to create new Google Sheet:', error);
-			// 	notifyWatch('Failed to create new Google Sheet');
-			// });
-
-
-			// Create a new Google Drive folder called "test"
-			//this just does it once when onInit() is invoked
-
-			// googleApi.createNewGoogleDriveFolder('test')
-			// .then((response) => {
-			// 	console.log('New folder created:', response);
-
-			// 	const zeppGoogleFolderId = response.id; 
-			// 	storage.setKey('zeppGoogleFolderId', zeppGoogleFolderId);
-		
-			// 	notifyWatch(`Created new Google Drive folder: ${response.name} (ID: ${response.id})`); 
-			// })
-			// .catch((error) => {
-			// 	console.error('Failed to create new Google Drive folder:', error);
-			// 	notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
-			// });
-
-
-			// A working way to search for folders; but uses api calls so more expesnive than just checking local storage
-
-			// googleApi.searchGoogleDriveFolder('test') 
-			// .then((existingFolders) => {
-			// 	if (existingFolders.length > 0) {
-			// 	console.log('Folder already exists:', existingFolders[0]);
-			// 	notifyWatch(`Folder already exists (ID: ${existingFolders[0].id})`); 
-			// 	storage.setKey('zeppGoogleFolderId', existingFolders[0].id); // Store existing folder ID incase failed to set before
-			// 	} 
-			// 	else 
-			// 	{
-			// 		// Create a new folder if it doesn't exist
-			// 	return googleApi.createNewGoogleDriveFolder('test')
-			// 		.then((response) => {
-			// 		console.log('New folder created:', response);
-			// 		storage.setKey('zeppGoogleFolderId', response.id);
-			// 		notifyWatch(`Created new Google Drive folder: ${response.name} (ID: ${response.id})`);
-			// 		})
-			// 		.catch((error) => {
-			// 			console.error('Failed to create new Google Drive folder:', error);
-			// 			notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
-			// 		});
-		
-			// 	}
-			// })
-			// .catch((error) => {
-			// 	console.error('Error checking or creating folder:', error);
-			// 	notifyWatch(`Error: ${error.message}`);
-			// });
-
-
-			if (!storage.getKey('zeppGoogleFolderId')) { // this means a folder doesn't exist currently, so make a new one
+			// Check if the Google Drive folder exists, if not, create it
+			if (!storage.getKey('zeppGoogleFolderId')) { 
 				googleApi.createNewGoogleDriveFolder('test') // TODO change "test" to the user's Google account name, maybe like "John Doe - Zepp Data"
 				.then((response) => {
 					console.log('New folder created:', response);
@@ -94,11 +31,46 @@ AppService(
 					const zeppGoogleFolderId = response.id; 
 					storage.setKey('zeppGoogleFolderId', zeppGoogleFolderId);
 			
-					notifyWatch(`Created new Google Drive folder: ${response.name} (ID: ${response.id})`); 
+					notifyWatch(`Created new Google Drive folde: ${response.name} (ID: ${response.id})`); 
+
+					//IMPORTANT! ! ! ! ! ! 
+					//TODO add some code that basically clicks the STOP button and then START button here, need to stop this from running and then start again for some reason if a new folder is created?
+					// i think this is probably because in this version (not up to date with main branch) the refresh token function isn't implemented in google-api.js?
+					// also append headers doesn't work, could be related? not sure
 				})
 				.catch((error) => {
 					console.error('Failed to create new Google Drive folder:', error);
 					notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
+				});
+			}
+			
+			let currentSheetId = storage.getKey('currentSheetId') || null;
+			// If there's no sheet at the time when onInit is invoked, create a new one for the current day (so we don't have to wait for onPerDay() to happen)
+			if (!currentSheetId) {
+				const today = new Date();
+				const dateTitle = today.toISOString().split('T')[0]; // e.g., "2025-01-24"
+
+				const folderId = storage.getKey('zeppGoogleFolderId');
+				if (!folderId) {
+					console.error("No folderId found in storage! Cannot create sheet.");
+					return;
+				}
+				googleApi
+					.createNewGoogleSheet(`zepp ${dateTitle}`, folderId) // in google-api.js, this will use setter method to set the sheetId instance variable before .then() happens
+					.then((response) => {
+						this.log('New spreadsheet created with onInit:', response);
+						this.log('Created spreadhseet in folder with onInit:', folderId);
+
+						const spreadsheetId = response.spreadsheetId; // get id of the new sheet
+						storage.setKey('currentSheetId', spreadsheetId); // save the id to storage
+
+						notifyWatch(`Created new Google Sheet with onInit: ${response.spreadsheetUrl} in folder ${folderId}`); //TODO this just prints the folderID which is like a url id, printing the actual folder name needs another API call I think
+				})
+				.catch((error) => {
+					this.log('Failed to create a new Google Sheet in onInit', error.message);
+					notifyWatch(
+						`Failed to create a new Google Sheet in onInit: ${JSON.stringify(error.message)}`,
+					);
 				});
 			}
 		
@@ -138,12 +110,8 @@ AppService(
 			timeSensor.onPerDay(() => {
 				this.log(
 					`Time report: ${timeSensor.getDay()}:${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
-					//  change this to be more clear depending on what format u want
+					// TODO change this to be more clear depending on what format you want
 				);
-
-				//also zepp hass ome inbuilt get date functions if u want https://docs.zepp.com/docs/reference/device-app-api/newAPI/sensor/Time/
-				// but the current way works fine for making title so i left it
-
 
 				// Generate the current date as the title
 				const today = new Date();
