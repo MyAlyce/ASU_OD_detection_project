@@ -48,7 +48,6 @@ AppService(
 			// 	storage.setKey('zeppGoogleFolderId', zeppGoogleFolderId);
 		
 			// 	notifyWatch(`Created new Google Drive folder: ${response.name} (ID: ${response.id})`); 
-			// 	// TODO: response.id contains the folder ID; implement the createNewGoogleSheet function to use this later
 			// })
 			// .catch((error) => {
 			// 	console.error('Failed to create new Google Drive folder:', error);
@@ -88,7 +87,7 @@ AppService(
 
 
 			if (!storage.getKey('zeppGoogleFolderId')) { // this means a folder doesn't exist currently, so make a new one
-				googleApi.createNewGoogleDriveFolder('test')
+				googleApi.createNewGoogleDriveFolder('test') // TODO change "test" to the user's Google account name, maybe like "John Doe - Zepp Data"
 				.then((response) => {
 					console.log('New folder created:', response);
 
@@ -166,7 +165,7 @@ AppService(
 						const spreadsheetId = response.spreadsheetId; // get id of the new sheet
 						storage.setKey('currentSheetId', spreadsheetId); // save the id to storage
 
-						notifyWatch(`Created new Google Sheet: ${response.spreadsheetUrl} in folder ${folderId}`);
+						notifyWatch(`Created new Google Sheet: ${response.spreadsheetUrl} in folder ${folderId}`); //TODO this just prints the folderID which is like a url id, printing the actual folder name needs another API call I think
 				})
 				.catch((error) => {
 					this.log('Failed to create a new Google Sheet', error.message);
