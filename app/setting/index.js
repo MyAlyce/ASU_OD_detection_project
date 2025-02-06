@@ -24,6 +24,7 @@ AppSettingsPage({
 		}
 		if (this.isTokenExpired() || !this.state.googleAuthData) {
 			this.state.googleAuthData = null;
+			// props.settingsStorage.setItem('googleAuthData', null);
 		}
 
 		if (!props.settingsStorage.getItem('activeTab')) {

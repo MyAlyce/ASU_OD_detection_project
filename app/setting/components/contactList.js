@@ -22,17 +22,19 @@ export const ContactList = () => {
 	const list = [];
 	for (const [contact, permissionId] of contactsMap) {
 		list.push(
-			Contact(contact, () => {
-				removeFilePermissionById(permissionId, accessToken).then((result) => {
-					if (result.success) {
-						console.log('Successfully removed contact:', contact);
-						contactsMap.delete(contact);
-						const updatedContacts = Object.fromEntries(contactsMap);
-						settings.setSetting(`contactsList_${email}`, updatedContacts);
-					} else {
-						console.error('Failed to remove contact:', contact);
-					}
-				});
+			Contact(contact, async () => {
+				const result = await removeFilePermissionById(
+					permissionId,
+					accessToken,
+				);
+				if (result.success) {
+					console.log('Successfully removed contact:', contact);
+					contactsMap.delete(contact);
+					const updatedContacts = Object.fromEntries(contactsMap);
+					settings.setSetting(`contactsList_${email}`, updatedContacts);
+				} else {
+					console.error('Failed to remove contact:', contact);
+				}
 			}),
 		);
 	}
