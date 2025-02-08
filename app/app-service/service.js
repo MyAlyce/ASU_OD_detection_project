@@ -1,10 +1,10 @@
 import * as notificationMgr from '@zos/notification';
-import { Time } from '@zos/sensor';
 import { BasePage } from '@zeppos/zml/base-page';
-import { HeartRate, Sleep } from '@zos/sensor';
-import { getProfile } from '@zos/user';
-import { getDeviceInfo } from '@zos/device';
 import { GoogleApi } from './google-api';
+import { HeartRate, Sleep } from '@zos/sensor';
+import { Time } from '@zos/sensor';
+import { getDeviceInfo } from '@zos/device';
+import { getProfile } from '@zos/user';
 
 const timeSensor = new Time();
 const storage = getApp().globals.storage;

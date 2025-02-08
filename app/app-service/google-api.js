@@ -80,8 +80,11 @@ export class GoogleApi {
 			({ status, body }) => {
 				if (status == 200) {
 					console.log('Successfully wrote to Google Sheets:', body);
-					return { message: `Successfully wrote to Google Sheets` };
+					return {
+						message: `Successfully wrote to Google Sheets`,
+					};
 				}
+
 				return Promise.reject({ message: body });
 			},
 		);
@@ -106,30 +109,18 @@ export class GoogleApi {
 			majorDimension: 'ROWS',
 		};
 
-		// const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
 		const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
 
 		return this.#refreshAccessToken().then(() => {
-			return this.svc
-				.httpRequest({
-					method: 'POST',
-					url,
-					body: JSON.stringify(body),
-					headers: {
-						Authorization: `Bearer ${this.accessToken}`,
-						'Content-Type': 'application/json',
-					},
-				})
-				.then(({ status, statusText, headers, body }) => {
-					if (typeof body === 'string') {
-						try {
-							body = JSON.parse(body);
-						} catch (e) {
-							return Promise.reject({ status, body: 'Invalid JSON response' });
-						}
-					}
-					return { status, body };
-				});
+			return this.svc.httpRequest({
+				method: 'POST',
+				url,
+				body: JSON.stringify(body),
+				headers: {
+					Authorization: `Bearer ${this.accessToken}`,
+					'Content-Type': 'application/json',
+				},
+			});
 		});
 	}
 
@@ -142,8 +133,6 @@ export class GoogleApi {
 			return Promise.resolve();
 		}
 
-		console.log('Refreshing access token...');
-		// Refresh the access token
 		const params = {
 			grant_type: 'refresh_token',
 			client_id: GOOGLE_API_CLIENT_ID,
