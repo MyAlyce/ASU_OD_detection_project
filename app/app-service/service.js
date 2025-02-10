@@ -5,7 +5,7 @@ import { HeartRate, Sleep } from '@zos/sensor';
 import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
 import { GoogleApi } from './google-api';
-import { Sequence } from '@silver-zepp/sequence';
+import { SequenceBG } from '@silver-zepp/sequence-bg';
 
 const timeSensor = new Time();
 const storage = getApp().globals.storage;
@@ -13,9 +13,11 @@ const tsdb = getApp().globals.tsdb;
 const debug = true;
 const SEND_INTERVAL = 1; // in minutes
 
+//Only allow sendDataToGoogle() to run in onPerMinute() if the folder and sheet have been created successfully or already exist
+let folderCheck = 0;
+let sheetCheck = 0;
 
 //TODO address another issue mentioned by Silver: "Another small issue is here. QuickJS doesn't have .error method so your notifyWatch will never execute. Just use .log for everything"
-
 
 AppService(
 	BasePage({
@@ -23,75 +25,99 @@ AppService(
 			const token = storage.getKey('token');
 			const refreshToken = storage.getKey('refreshToken');
 			const expiryDate = storage.getKey('expiresAt');
-			const googleApi = new GoogleApi(this, token, refreshToken, expiryDate, null); //the "null" is the sheetId instance variable of google-api.js, which is set at the time of sheet creation
+			const googleApi = new GoogleApi(
+				this,
+				token,
+				refreshToken,
+				expiryDate,
+				null,
+			); //the "null" is the sheetId instance variable of google-api.js, which is set at the time of sheet creation
 
 			notifyWatch(`Starting service, token is here? ${!!token}`);
-			
-			let currentSheetId = null;
 
-			//function A
+			let currentSheetId = storage.getKey('currentSheetId') || null; // get the current sheet id from storage, if it exists
 
-			function checkOrCreateFolder(folderName = "test") { // Check if the Google Drive folder exists, if not, create it
-				if (!storage.getKey('zeppGoogleFolderId')) { 
-					googleApi.createNewGoogleDriveFolder(folderName) // TODO change "test" to the user's Google account name, maybe like "John Doe - Zepp Data"
-					.then((response) => {
-						console.log('New folder created:', response);
+			//function A; a pre-requisite for function B (in onInit()'s scope)
+			function checkOrCreateFolder() {
+				// Check if the Google Drive folder exists, if not, create it
+				if (!storage.getKey('zeppGoogleFolderId')) {
+					googleApi
+						.createNewGoogleDriveFolder("test") // TODO change "test" to the user's Google account name, maybe like "John Doe - Zepp Data"
+						.then((response) => {
+							console.log('New folder created:', response);
 
-						const zeppGoogleFolderId = response.id; 
-						storage.setKey('zeppGoogleFolderId', zeppGoogleFolderId);
-				
-						notifyWatch(`Created new Google Drive folde: ${response.name} (ID: ${response.id})`); 
-
-					})
-					.catch((error) => {
-						console.error('Failed to create new Google Drive folder:', error);
-						notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
-					});
-				}
-			}
-
-
-
-
-			//function B
-			//TODO 2/5/2025 1:54 AM (left off) in this method removed a check for: if (!currentSheetId) { // If there's no sheet at the time when onInit is invoked, create a new one for the current day (so we don't have to wait for onPerDay() to happen)
-			// do this check manually later, when i call createNewSheet() function
-
-			//use functions tom odel off what was previously done (in the PR basically) and then implement silver's async thingy
-			function createNewSheet() {
-				const today = new Date();
-				const dateTitle = today.toISOString().split('T')[0]; // e.g., "2025-01-24"
-
-				const folderId = storage.getKey('zeppGoogleFolderId');
-				if (!folderId) {
-					console.error("No folderId found in storage! Cannot create sheet.");
+							const zeppGoogleFolderId = response.id;
+							storage.setKey('zeppGoogleFolderId', zeppGoogleFolderId);
+							notifyWatch(
+								`Created new Google Drive folde: ${response.name} (ID: ${response.id})`,
+							);
+							folderCheck = 1;
+						})
+						.catch((error) => {
+							console.error('Failed to create new Google Drive folder:', error);
+							notifyWatch(
+								`Failed to create new Google Drive folder: ${error.message}`,
+							);
+							folderCheck = 0;
+						});
+				} else {
 					return;
 				}
-				googleApi
-					.createNewGoogleSheet(`zepp ${dateTitle}`, folderId) // in google-api.js, this will use setter method to set the sheetId instance variable before .then() happens
-					.then((response) => {
-						this.log('New spreadsheet created inside of onInit:', response);
-						this.log('Created spreadhseet in folder inside of onInit:', folderId);
-
-						const spreadsheetId = response.spreadsheetId; // get id of the new sheet
-						storage.setKey('currentSheetId', spreadsheetId); // save the id to storage
-
-						notifyWatch(`Created new Google Sheet inside of onInit: ${response.spreadsheetUrl} in folder ${folderId}`); //TODO this just prints the folderID which is like a url id, printing the actual folder name needs another API call I think
-				})
-				.catch((error) => {
-					this.log('Failed to create a new Google Sheet inside of onInit', error.message);
-					notifyWatch(
-						`Failed to create a new Google Sheet inside of onInit: ${JSON.stringify(error.message)}`,
-					);
-				});
-				
 			}
 
+			//function B; can only run within onInit() if function A has been successful
+			function createNewSheet(override = false) {
+				if (!currentSheetId || override) {
+					// if there is no current sheet id, or if override is true (which happens in onPerDay()'s context), create a new sheet
+					if (!override) {
+						this.log(
+							"Sheet wasn't found for current onInit() instance, creating a new one...",
+						);
+					}
+					
+					const today = new Date();
+					const dateTitle = today.toISOString().split('T')[0]; // e.g., "2025-01-24"
 
+					const folderId = storage.getKey('zeppGoogleFolderId');
+					if (!folderId) {
+						console.error('No folderId found in storage! Cannot create sheet.');
+						return;
+					}
+					googleApi
+						.createNewGoogleSheet(`zepp ${dateTitle}`, folderId) // in google-api.js, this will use setter method to set the sheetId instance variable before .then() happens
+						.then((response) => {
+							this.log('New spreadsheet created inside of onInit:', response);
+							this.log(
+								'Created spreadhseet in folder inside of onInit:',
+								folderId,
+							);
 
+							const spreadsheetId = response.spreadsheetId; // get id of the new sheet
+							storage.setKey('currentSheetId', spreadsheetId); // save the id to storage
 
-			//function C
+							notifyWatch(
+								`Created new Google Sheet inside of onInit: ${response.spreadsheetUrl} in folder ${folderId}`,
+							); //TODO this just prints the folderID which is like a url id, printing the actual folder name needs another API call I think
+							sheetCheck = 1;
+						})
+						.catch((error) => {
+							this.log(
+								'Failed to create a new Google Sheet inside of onInit',
+								error.message,
+							);
+							notifyWatch(
+								`Failed to create a new Google Sheet inside of onInit: ${JSON.stringify(error.message)}`,
+								(sheetCheck = 0),
+							);
+						});
+				} else {
+					notifyWatch( // for debug
+						'Weird thing in createNewSheet()'
+					);
+				}
+			}
 
+			//function C; can only run in onPerMinute() if both functions A and B are successful (folderCheck and sheetCheck are both 1)
 			function sendDataToGoogle() {
 				const fiveMinutesAgo = Date.now() - 6 * 60 * 1000;
 				const now = Date.now();
@@ -116,14 +142,29 @@ AppService(
 					});
 			}
 
-
-			
-			checkOrCreateFolder(); // Call function A
-
-
-
-			
-
+			// Sequence to run functions A, B (and eventually C) in order
+			const folderSheetSeq = new SequenceBG({ autodestroy: false })
+				.log('Starting blocks A & B sequentially')
+				.await(checkOrCreateFolder) // Call function A
+				.log("Notification #1 in sequence")
+				.call((result) => {
+					notificationMgr.notify({
+						title: 'A',
+						content: JSON.stringify(result),
+						actions: [],
+					});
+				})
+				.log('Block A executed. Executing block B.')
+				.await(createNewSheet) // ...THEN Call function B
+				.log('Notification #2 in sequence')
+				.call((result) => {
+					notificationMgr.notify({
+						title: 'A & B',
+						content: JSON.stringify(result),
+						actions: [],
+					});
+				})
+				.start();
 
 			timeSensor.onPerMinute(() => {
 				this.log(
@@ -133,7 +174,13 @@ AppService(
 				// Every minute, save metrics to TSDB
 				// saveToTSDB(this.getMetrics());
 				if (timeSensor.getMinutes() % SEND_INTERVAL == 0) {
-					sendDataToGoogle();
+					if (folderCheck == 1 && sheetCheck == 1) {
+						sendDataToGoogle(); // Call function C
+					} else {
+						this.log(
+							'Folder or sheet not created yet, skipping sendDataToGoogle()',
+						);
+					}
 				}
 			});
 
@@ -143,34 +190,7 @@ AppService(
 					// TODO change this to be more clear depending on what format you want
 				);
 
-				// Generate the current date as the title
-				const today = new Date();
-				const dateTitle = today.toISOString().split('T')[0]; // e.g., "2025-01-24"
-
-				// Get folder id to store sheet in
-				const folderId = storage.getKey('zeppGoogleFolderId');
-				if (!folderId) {
-					console.error("No folderId found in storage! Cannot create sheet.");
-					return;
-				  }
-
-				googleApi
-					.createNewGoogleSheet(`zepp ${dateTitle}`, folderId)
-					.then((response) => {
-						this.log('New spreadsheet created:', response);
-						this.log('Created spreadhseet in folder:', folderId);
-
-						const spreadsheetId = response.spreadsheetId; // get id of the new sheet
-						storage.setKey('currentSheetId', spreadsheetId); // save the id to storage
-
-						notifyWatch(`Created new Google Sheet: ${response.spreadsheetUrl} in folder ${folderId}`); //TODO this just prints the folderID which is like a url id, printing the actual folder name needs another API call I think
-				})
-				.catch((error) => {
-					this.log('Failed to create a new Google Sheet', error.message);
-					notifyWatch(
-						`Failed to create a new Google Sheet: ${JSON.stringify(error.message)}`,
-					);
-				});
+				createNewSheet(true); // execute function B; every day, create a new sheet for the new day
 			});
 		},
 		getMetrics() {
