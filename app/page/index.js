@@ -169,7 +169,9 @@ Page(
 				...RESUCE_PLAN_BUTTON,
 				click_func: () => {
 					console.log('Rescue Plan button clicked');
-					// Handle Rescue Plan button click here
+					push({
+						url: 'page/rescuePlan', // No parameters passed here
+					});				
 				},
 			});
 		},
