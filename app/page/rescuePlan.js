@@ -1,10 +1,7 @@
-import { BasePage } from '@zeppos/zml/base-page';
-import * as appService from '@zos/app-service';
-import { queryPermission, requestPermission } from '@zos/app';
+
 import hmUI from '@zos/ui';
-import { push } from '@zos/router';
-import { getText } from "@zos/i18n";
 import * as notificationMgr from "@zos/notification";
+
 import {
     TEXT_WIDGET,
     TEST_NOTIFICATION_BUTTON,
@@ -45,7 +42,7 @@ Page({
             }
         });
     },
-            
+
     onDestroy() {
         console.log('Rescue Plan page destroyed');
     },
