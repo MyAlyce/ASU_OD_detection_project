@@ -9,6 +9,7 @@ import {
 	SLEEP_BUTTON,
 	PERMISSIONS_BUTTON,
 	STOP_BUTTON,
+	RESUCE_PLAN_BUTTON,
 } from 'zosLoader:./index.[pf].layout.js';
 
 import {
@@ -161,6 +162,14 @@ Page(
 					push({
 						url: 'page/permissionsPage', // No parameters passed here
 					});
+				},
+			});
+			
+			hmUI.createWidget(hmUI.widget.BUTTON, {
+				...RESUCE_PLAN_BUTTON,
+				click_func: () => {
+					console.log('Rescue Plan button clicked');
+					// Handle Rescue Plan button click here
 				},
 			});
 		},
