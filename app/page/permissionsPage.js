@@ -21,7 +21,7 @@ Page({
 		remStage: true,
 		lightStage: true,
 		deepStage: true,
-		heartRate: true
+		heartRate: true,
 	},
 
 	onInit() {

@@ -1,5 +1,5 @@
 import { Sleep } from '@zos/sensor'; // Import the Sleep module
-import { HeartRate } from '@zos/sensor'
+import { HeartRate } from '@zos/sensor';
 
 const sleep = new Sleep();
 const heart = new HeartRate();
@@ -94,7 +94,7 @@ export function getStageConstantObj(stageKey) {
 	}
 }
 
-export function read_heartRate(){
+export function read_heartRate() {
 	const current_HR = heart.getCurrent();
-	console.log("Current heartrate is:", current_HR);
+	console.log('Current heartrate is:', current_HR);
 }

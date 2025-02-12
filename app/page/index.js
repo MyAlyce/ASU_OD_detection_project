@@ -62,7 +62,7 @@ Page(
 					'remStage',
 					'lightStage',
 					'deepStage',
-					'heartRate'
+					'heartRate',
 				];
 
 				let permissions = {}; // Local object to store permissions
