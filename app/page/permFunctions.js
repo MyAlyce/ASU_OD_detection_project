@@ -95,6 +95,8 @@ export function getStageConstantObj(stageKey) {
 }
 
 export function read_heartRate() {
-	const current_HR = heart.getCurrent();
-	console.log('Current heartrate is:', current_HR);
+	const callback = () => {
+		console.log(heart.getCurrent());
+	};
+	heart.onCurrentChange(callback);
 }
