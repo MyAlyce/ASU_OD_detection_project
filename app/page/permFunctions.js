@@ -4,7 +4,7 @@ const sleep = new Sleep();
 
 // Function to handle the sleep button click and permissions
 export function onClickSleepButton(jsonstringPermissions) {
-	console.log('Sleep button pressed. in sleepFunctions.js');
+	console.log('Sleep button pressed. in permFunctions.js');
 
 	// Log the received JSON string of permissions
 	console.log('Received JSON string of permissions:', jsonstringPermissions);

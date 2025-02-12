@@ -16,7 +16,7 @@ import {
 	onClickSleepButton,
 	getSleepInfo,
 	getStageConstantObj,
-} from './sleepFunctions.js';
+} from './permFunctions.js';
 
 const permissions = ['device:os.bg_service'];
 const service = 'app-service/service';
