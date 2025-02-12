@@ -63,6 +63,7 @@ Page(
 					'remStage',
 					'lightStage',
 					'deepStage',
+					'heartRate',
 				];
 
 				let permissions = {}; // Local object to store permissions
@@ -169,10 +170,12 @@ Page(
 				...RESUCE_PLAN_BUTTON,
 				click_func: () => {
 					console.log('Rescue Plan button clicked');
+					
 					push({
 						url: 'page/rescuePlan', // No parameters passed here
-					});				
-				},
+						params: jsonstringPermissions, // Pass the parameters. Be used to check that heart rate permissions are enabled (need to enable them to use the Rescue Plan)
+					});		
+					},
 			});
 		},
 

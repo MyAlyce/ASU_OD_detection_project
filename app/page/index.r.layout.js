@@ -40,7 +40,7 @@ export const SLEEP_BUTTON = {
 	radius: px(12),
 	normal_color: 0xaa42ee,
 	press_color: 0xb964f0,
-	text: 'Sleep Data',
+	text: 'Data',
 };
 
 export const PERMISSIONS_BUTTON = {

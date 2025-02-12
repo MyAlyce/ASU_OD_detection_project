@@ -1,10 +1,12 @@
 import { Sleep } from '@zos/sensor'; // Import the Sleep module
+import { HeartRate } from '@zos/sensor';
 
 const sleep = new Sleep();
+const heart = new HeartRate();
 
 // Function to handle the sleep button click and permissions
 export function onClickSleepButton(jsonstringPermissions) {
-	console.log('Sleep button pressed. in permFunctions.js');
+	console.log('Sleep button pressed. in sleepFunctions.js');
 
 	// Log the received JSON string of permissions
 	console.log('Received JSON string of permissions:', jsonstringPermissions);
@@ -48,6 +50,9 @@ export function onClickSleepButton(jsonstringPermissions) {
 						case 'deepStage':
 							getStageConstantObj('DEEP_STAGE');
 							break;
+						case 'heartRate':
+							read_heartRate();
+							break;
 						default:
 							console.log(`No action defined for permission: ${key}`);
 					}
@@ -87,4 +92,9 @@ export function getStageConstantObj(stageKey) {
 	} else {
 		console.log(`No data for ${stageKey}`);
 	}
+}
+
+export function read_heartRate() {
+	const current_HR = heart.getCurrent();
+	console.log('Current heartrate is:', current_HR);
 }
