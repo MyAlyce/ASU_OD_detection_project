@@ -13,11 +13,107 @@ const tsdb = getApp().globals.tsdb;
 const debug = true;
 const SEND_INTERVAL = 1; // in minutes
 
-//Only allow sendDataToGoogle() to run in onPerMinute() if the folder and sheet have been created successfully or already exist
-let folderCheck = 0;
-let sheetCheck = 0;
-
 //TODO address another issue mentioned by Silver: "Another small issue is here. QuickJS doesn't have .error method so your notifyWatch will never execute. Just use .log for everything"
+
+// Check if the Google Drive folder exists, if not, create it
+function checkOrCreateFolder(googleApi) {
+	if (storage.getKey('zeppGoogleFolderId')) {
+		return Promise.resolve('folder already exists'); // if the folder id is already in storage, return a resolved promise
+	}
+
+	return googleApi // return a promise from this function
+		.createNewGoogleDriveFolder('test') // TODO change "test" to the user's Google account name, maybe like "John Doe - Zepp Data"
+		.then((response) => {
+			console.log('New folder created:', response);
+
+			const zeppGoogleFolderId = response.id;
+			storage.setKey('zeppGoogleFolderId', zeppGoogleFolderId);
+			notifyWatch(
+				`Created new Google Drive folde: ${response.name} (ID: ${response.id})`,
+			);
+			return Promise.resolve('folder creation success'); // return a resolved promise
+		})
+		.catch((error) => {
+			console.error('Failed to create new Google Drive folder:', error);
+			notifyWatch(`Failed to create new Google Drive folder: ${error.message}`);
+			return Promise.reject(`failed to create folder: ${error.message}`); // return a rejected promise
+		});
+}
+
+// Create a new Google Sheet assuming prerequisites are met (i.e., the folder and sheet both exist)
+function createNewSheet(googleApi, newDay = false) {
+	if (currentSheetId && !newDay) {
+		return Promise.resolve('sheet already exists'); // if the current sheet id exists and newDay is false, return a resolved promise
+	}
+
+	// if there is no current sheet id, or if newDay is true (which happens in onPerDay()'s context), create a new sheet
+	if (!newDay) {
+		this.log(
+			"Sheet wasn't found for current onInit() instance, creating a new one...",
+		);
+	} else {
+		this.log('Creating a new sheet for the new day...');
+	}
+
+	const folderId = storage.getKey('zeppGoogleFolderId');
+	if (!folderId) {
+		console.error('No folderId found in storage! Cannot create sheet.');
+		return Promise.reject('No folderId found in storage! Cannot create sheet.');
+	}
+
+	const today = new Date();
+	const dateTitle = today.toISOString().split('T')[0]; // e.g., "2025-01-24"
+
+	return googleApi
+		.createNewGoogleSheet(`zepp ${dateTitle}`, folderId) // in google-api.js, this will use setter method to set the sheetId instance variable before .then() happens
+		.then((response) => {
+			this.log('New spreadsheet created inside of onInit:', response);
+			this.log('Created spreadhseet in folder inside of onInit:', folderId);
+
+			const spreadsheetId = response.spreadsheetId; // get id of the new sheet
+			storage.setKey('currentSheetId', spreadsheetId); // save the id to storage
+
+			notifyWatch(
+				`Created new Google Sheet inside of onInit: ${response.spreadsheetUrl} in folder ${folderId}`,
+			); //TODO this just prints the folderID which is like a url id, printing the actual folder name needs another API call I think
+			return Promise.resolve('sheet creation success'); // return a resolved promise
+		})
+		.catch((error) => {
+			this.log(
+				'Failed to create a new Google Sheet inside of onInit',
+				error.message,
+			);
+			notifyWatch(
+				`Failed to create a new Google Sheet inside of onInit: ${JSON.stringify(error.message)}`,
+			);
+			return Promise.reject(`failed to create sheet: ${error.message}`); // return a rejected promise
+		});
+}
+
+//should run in onPerMinute() if and only if both the folder and sheet exist; data should be passed in from getMetrics()
+function sendDataToGoogle(googleApi, data) {
+	const fiveMinutesAgo = Date.now() - 6 * 60 * 1000;
+	const now = Date.now();
+	notifyWatch(`data ${tsdb.retrieveDataSeries(fiveMinutesAgo, now)}`);
+
+	//const data = [this.getMetrics()];
+
+	// todo: connectStatus() to check if the phone is connected
+	googleApi
+		.sendDataToGoogleSheets(data)
+		.then((res) => {
+			this.log('Successfully wrote to Google Sheets', res.message);
+			notifyWatch(res.message);
+			// tsdb.purge(fiveMinutesAgo);
+		})
+		.catch((error) => {
+			this.log('Failed to write to Google Sheets', error.message);
+			notifyWatch(
+				`Failed to write to Google Sheets: ${JSON.stringify(error.message)}`,
+			);
+			// TODO save to tsdb for retry later
+		});
+}
 
 AppService(
 	BasePage({
@@ -37,162 +133,27 @@ AppService(
 
 			let currentSheetId = storage.getKey('currentSheetId') || null; // get the current sheet id from storage, if it exists
 
-			//function A; a pre-requisite for function B (in onInit()'s scope)
-			function checkOrCreateFolder() {
-				// Check if the Google Drive folder exists, if not, create it
-				if (storage.getKey('zeppGoogleFolderId')) {
-					return Promise.resolve('folder already exists'); // if the folder id is already in storage, return a resolved promise
-				}
-
-				return googleApi // return a promise from this function
-					.createNewGoogleDriveFolder('test') // TODO change "test" to the user's Google account name, maybe like "John Doe - Zepp Data"
-					.then((response) => {
-						console.log('New folder created:', response);
-
-						const zeppGoogleFolderId = response.id;
-						storage.setKey('zeppGoogleFolderId', zeppGoogleFolderId);
-						notifyWatch(
-							`Created new Google Drive folde: ${response.name} (ID: ${response.id})`,
-						);
-						return Promise.resolve('folder creation success'); // return a resolved promise
-					})
-					.catch((error) => {
-						console.error('Failed to create new Google Drive folder:', error);
-						notifyWatch(
-							`Failed to create new Google Drive folder: ${error.message}`,
-						);
-						return Promise.reject(`failed to create folder: ${error.message}`); // return a rejected promise
-					});
-			}
-
-			//function B; can only run within onInit() if function A has been successful
-			function createNewSheet(newDay = false) {
-				if (currentSheetId && !newDay) {
-					return Promise.resolve('sheet already exists'); // if the current sheet id exists and newDay is false, return a resolved promise
-				}
-
-				// if there is no current sheet id, or if newDay is true (which happens in onPerDay()'s context), create a new sheet
-				if (!newDay) {
-					this.log("Sheet wasn't found for current onInit() instance, creating a new one...");
-				} else {
-					this.log('Creating a new sheet for the new day...');
-				}
-
-				const folderId = storage.getKey('zeppGoogleFolderId');
-				if (!folderId) {
-					console.error('No folderId found in storage! Cannot create sheet.');
-					return Promise.reject(
-						'No folderId found in storage! Cannot create sheet.',
-					);
-				}
-
-				const today = new Date();
-				const dateTitle = today.toISOString().split('T')[0]; // e.g., "2025-01-24"
-
-				return googleApi
-					.createNewGoogleSheet(`zepp ${dateTitle}`, folderId) // in google-api.js, this will use setter method to set the sheetId instance variable before .then() happens
-					.then((response) => {
-						this.log('New spreadsheet created inside of onInit:', response);
-						this.log(
-							'Created spreadhseet in folder inside of onInit:',
-							folderId,
-						);
-
-						const spreadsheetId = response.spreadsheetId; // get id of the new sheet
-						storage.setKey('currentSheetId', spreadsheetId); // save the id to storage
-
-						notifyWatch(
-							`Created new Google Sheet inside of onInit: ${response.spreadsheetUrl} in folder ${folderId}`,
-						); //TODO this just prints the folderID which is like a url id, printing the actual folder name needs another API call I think
-						return Promise.resolve('sheet creation success'); // return a resolved promise
-					})
-					.catch((error) => {
-						this.log(
-							'Failed to create a new Google Sheet inside of onInit',
-							error.message,
-						);
-						notifyWatch(
-							`Failed to create a new Google Sheet inside of onInit: ${JSON.stringify(error.message)}`,
-						);
-						return Promise.reject(`failed to create sheet: ${error.message}`); // return a rejected promise
-					});
-			}
-
-			//function C; can only run in onPerMinute() if both functions A and B are successful (folderCheck and sheetCheck are both 1)
-			function sendDataToGoogle() {
-				const fiveMinutesAgo = Date.now() - 6 * 60 * 1000;
-				const now = Date.now();
-				notifyWatch(`data ${tsdb.retrieveDataSeries(fiveMinutesAgo, now)}`);
-
-				const data = [this.getMetrics()];
-
-				// todo: connectStatus() to check if the phone is connected
-				googleApi
-					.sendDataToGoogleSheets(data)
-					.then((res) => {
-						this.log('Successfully wrote to Google Sheets', res.message);
-						notifyWatch(res.message);
-						// tsdb.purge(fiveMinutesAgo);
-					})
-					.catch((error) => {
-						this.log('Failed to write to Google Sheets', error.message);
-						notifyWatch(
-							`Failed to write to Google Sheets: ${JSON.stringify(error.message)}`,
-						);
-						// TODO save to tsdb for retry later
-					});
-			}
-
-			// Sequence to run functions A, B (and eventually C) in order
-			// const folderSheetSeq = new SequenceBG({ autodestroy: false })
-			// 	.log('Starting blocks A & B sequentially')
-			// 	.await(checkOrCreateFolder) // Call function A
-			// 	.log('Notification #1 in sequence')
-			// 	.call((result) => {
-			// 		notificationMgr.notify({
-			// 			title: 'A',
-			// 			content: JSON.stringify(result),
-			// 			actions: [],
-			// 		});
-			// 	})
-			// 	.log('Block A executed. Executing block B.')
-			// 	.await(createNewSheet) // ...THEN Call function B
-			// 	.log('Notification #2 in sequence')
-			// 	.call((result) => {
-			// 		notificationMgr.notify({
-			// 			title: 'A & B',
-			// 			content: JSON.stringify(result),
-			// 			actions: [],
-			// 		});
-			// 	})
-			// 	.start();
-
-			checkOrCreateFolder()
-			.then((result) => {
-				this.log("checkOrCreateFolder() result:", result);
-				notifyWatch(`checkOrCreateFolder() result: ${result}`);
-				folderCheck = 1;
-
-				createNewSheet()
+			// check if the folder exists, and if not, create it; then create a new sheet before proceeding
+			checkOrCreateFolder(googleApi)
 				.then((result) => {
-					this.log("createNewSheet() result:", result);
-					notifyWatch(`createNewSheet() result: ${result}`);
-					sheetCheck = 1; // ideally we get to this point
+					this.log('checkOrCreateFolder() result:', result);
+					notifyWatch(`checkOrCreateFolder() result: ${result}`);
+
+					createNewSheet(googleApi)
+						.then((result) => {
+							this.log('createNewSheet() result:', result);
+							notifyWatch(`createNewSheet() result: ${result}`);
+							// ideally we get to this point
+						})
+						.catch((error) => {
+							this.log('createNewSheet() error:', error);
+							notifyWatch(`createNewSheet() error: ${error}`);
+						});
 				})
 				.catch((error) => {
-					this.log("createNewSheet() error:", error);
-					notifyWatch(`createNewSheet() error: ${error}`);
-					sheetCheck = 0
-				})
-
-			})
-			.catch((error) => {
-				this.log("checkOrCreateFolder() error:", error);
-				notifyWatch(`checkOrCreateFolder() error: ${error}`);
-				folderCheck = 0
-			})
-
-
+					this.log('checkOrCreateFolder() error:', error);
+					notifyWatch(`checkOrCreateFolder() error: ${error}`);
+				});
 
 			timeSensor.onPerMinute(() => {
 				this.log(
@@ -202,11 +163,12 @@ AppService(
 				// Every minute, save metrics to TSDB
 				// saveToTSDB(this.getMetrics());
 				if (timeSensor.getMinutes() % SEND_INTERVAL == 0) {
-					if (folderCheck == 1 && sheetCheck == 1) {
-						sendDataToGoogle(); // Call function C
-					} else {
+					try {
+						sendDataToGoogle(googleApi, this.getMetrics()); // send data to Google Sheets every SEND_INTERVAL minutes
+					} catch (error) {
 						this.log(
-							'Folder or sheet not created yet, skipping sendDataToGoogle()',
+							'Failed to send data to Google Sheets in onPerMinute()',
+							error.message,
 						);
 					}
 				}
@@ -218,7 +180,7 @@ AppService(
 					// TODO change this to be more clear depending on what format you want
 				);
 
-				createNewSheet(true); // execute function B; every day, create a new sheet for the new day
+				createNewSheet(googleApi, true); // every day, create a new sheet for the new day
 			});
 		},
 		getMetrics() {
