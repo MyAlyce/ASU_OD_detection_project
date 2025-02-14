@@ -1,18 +1,106 @@
+import * as notificationMgr from '@zos/notification';
+
+// use to debug
+const debug = true;
+const notifyWatch = (content) => {
+	if (debug) {
+		notificationMgr.notify({
+			title: 'MyAlyce',
+			content,
+			actions: [],
+		});
+	}
+};
+
+const storage = getApp().globals.storage;
+
 export class GoogleApi {
-	constructor(svc, accessToken, refreshToken, expiryDate, currentSheetId) {
+	constructor(svc, accessToken, refreshToken, expiryDate) {
 		this.svc = svc;
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
 		this.expiryDate = expiryDate;
-		this.currentSheetId = null;
+		this.folderId = storage.getKey('zeppGoogleFolderId') || null;
+		this.currentSheetId = storage.getKey('currentSheetId') || null;
+	}
+
+	setFolderId(folderId) {
+		storage.setKey('zeppGoogleFolderId', folderId);
+		this.folderId = folderId;
+	}
+
+	getfolderId() {
+		return this.folderId || storage.getKey('zeppGoogleFolderId') || null;
 	}
 	
 	setSheetId(sheetId) { 
+		storage.setKey('currentSheetId', sheetId);
 		this.currentSheetId = sheetId; 
 	}
 
 	getSheetId() { 
-		return this.currentSheetId || '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // return only if not null, otherwise return '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU' <- zepptest
+		return this.currentSheetId || storage.getKey('currentSheetId') || null;
+	}
+
+	// Check if the Google Drive folder exists, if not, create it
+	checkOrCreateFolder(folderName="test") {
+		notifyWatch('Checking for Google Drive folder in google-api.js...'); 
+
+		if (this.getfolderId()) {
+			notifyWatch('Promise Resolved: In g-api.js, verified that a folder already exists');
+
+			return Promise.resolve('verified that a folder already exists');
+		}
+
+		return this // return a promise from this function
+		.createNewGoogleDriveFolder(folderName)
+		.then((response) => {
+			this.setFolderId(response.id);
+
+			notifyWatch(`Promise Resolved: In g-api.js, made new GD folder: ${response.name} (ID: ${response.id}) and key: ${storage.getKey('zeppGoogleFolderId')}`);
+
+			return Promise.resolve('folder creation success'); // return a resolved promise
+		})
+		.catch((error) => {
+			notifyWatch(`Promise Rejected: In g-api.js, failed to create a new Google Drive folder: ${error.message}`);
+
+			return Promise.reject(`failed to create a new Google Drive folder: ${error.message}`); // return a rejected promise
+		});
+	}
+	
+	// Create a new Google Sheet assuming prerequisites are met (i.e. the folder exists)
+	createNewSheet(newDay = false) {
+		notifyWatch('Calling createNewSheet() in google-api.js...');
+
+		if (!this.getfolderId()) {
+			notifyWatch('Promise Rejected: No folder ID found in g-api.js');
+
+			return Promise.reject('No folder ID found');
+		}
+
+		const folderId = this.getfolderId();
+
+		if (this.getSheetId() && !newDay) {
+			notifyWatch('Promise Resolved: Sheet already exists for the current day');
+
+			return Promise.resolve('Sheet already exists for the current day');
+		}
+
+		const today = new Date();
+		const dateTitle = today.toISOString().split('T')[0]; // e.g., "2025-01-24"
+	
+		return this
+			.createNewGoogleSheet(`zepp ${dateTitle}`, folderId) // createNewGoogleSheet will use the setter method to set the sheetId instance variable before .then() happens
+			.then((response) => {
+				notifyWatch(`Promise Resolved: In g-api.js, made a new Google Sheet: ${response.spreadsheetId} in folder ${folderId}`); 
+
+				return Promise.resolve('Sheet creation success'); // return a resolved promise
+			})
+			.catch((error) => {
+				notifyWatch(`Promise Rejected: In g-api.js, failed to create a new Google Sheet: ${JSON.stringify(error.message)}`);
+
+				return Promise.reject(`Failed to create new sheet: ${error.message}`); // return a rejected promise
+			});
 	}
 
 	// Write a function to refresh the access token
@@ -135,7 +223,6 @@ export class GoogleApi {
 			});
 	}
 
-
 	/**
 	 * Create a new Google Sheet
 	 *
@@ -166,25 +253,28 @@ export class GoogleApi {
 					if (typeof body === 'string') {
 						body = JSON.parse(body);
 					}
-					console.log(`Spreadsheet "${title}" created successfully!`, body);
+
+					//console.log(`Spreadsheet "${title}" created successfully!`, body);
 
 					this.setSheetId(body.spreadsheetId); // Save the ID of the new sheet
 
 					if (folderId) {
 						return this.moveFileToFolder(body.spreadsheetId, folderId)
 							.then(() => {
-								console.log(`Spreadsheet moved to folder ${folderId}`);
+								//console.log(`Spreadsheet moved to folder ${folderId}`);
+
 								return body; // Ensure we return the spreadsheet details after moving
 							})
 							.catch((moveError) => {
-								console.warn(`Failed to move spreadsheet into the proper folder: ${moveError.message}`);
+								//console.warn(`Failed to move spreadsheet into the proper folder: ${moveError.message}`);
+
 								return body; // Return the spreadsheet details even if moving fails
 							});
 					}
 
 					return body;
 				}
-				return Promise.reject(new Error(`Failed to create spreadsheet: ${status}`));
+				return Promise.reject(`Failed to create spreadsheet: ${status}`);
 			})
 			.catch((err) => {
 				console.error('Error creating new spreadsheet:', err);
@@ -215,7 +305,7 @@ export class GoogleApi {
 				if (status === 200) {
 					console.log(`File ${fileId} moved to folder ${folderId}`);
 				} else {
-					return Promise.reject(new Error(`Failed to move file: ${status}`));
+					return Promise.reject(`Failed to move file: ${status}`);
 				}
 			})
 			.catch((err) => {
@@ -225,12 +315,12 @@ export class GoogleApi {
 	}
 
 	/**
-	 * Creates a new folder in Google Drive.
+	 * Create a new folder in Google Drive
 	 *
 	 * @param {string} folderName - The name of the new folder to create.
 	 * @returns {Promise<object>} - The response from the Google Drive API with the created folder's details
 	 */
-	createNewGoogleDriveFolder(folderName) {
+	createNewGoogleDriveFolder(folderName="test") {
 		return this.svc.httpRequest({
 			method: 'POST',
 			url: 'https://www.googleapis.com/drive/v3/files',
@@ -247,17 +337,18 @@ export class GoogleApi {
 				body = JSON.parse(body);
 			}
 			if (status === 200 || status === 201) {
+				notifyWatch(`Inside google-api.js, via createNewGoogleDriveFolder(): Folder created: ${body.id}`); 
 				return body;
 			}
-			return Promise.reject(new Error(`Failed to create folder: ${body.error?.message || status}`));
+			notifyWatch(`Inside google-api.js, via createNewGoogleDriveFolder(): Failed to create folder: ${body.error?.message || status}`); 
+			return Promise.reject(`Inside google-api.js, via createNewGoogleDriveFolder(): Failed to create folder: ${body.error?.message || status}`);
 		});
-		
 	}
 
 	/**
-	 * Creates a new folder in Google Drive.
+	 * Searches for a folder in Google Drive
 	 *
-	 * @param {string} folderName - The name of the new folder to create
+	 * @param {string} folderName - The name of the new folder to search for
 	 * @returns {Promise<object>} - The response from the Google Drive API 
 	 */
 	searchGoogleDriveFolder(folderName) {
@@ -274,9 +365,10 @@ export class GoogleApi {
 		  if (status === 200) {
 			return body.files || []; // Return array of matching folders
 		  }
-		  return Promise.reject(new Error(`Failed to search folder: ${body.error?.message || status}`));
+		  notifyWatch(`Failed to search for folder: ${body.error?.message || status}`); 
+		  return Promise.reject(`Failed to search for folder: ${body.error?.message || status}`);
 		});
 	  }
 	  
-	
+
 }
