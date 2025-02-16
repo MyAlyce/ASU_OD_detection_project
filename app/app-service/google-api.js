@@ -32,42 +32,49 @@ export class GoogleApi {
 	getfolderId() {
 		return this.folderId || storage.getKey('zeppGoogleFolderId') || null;
 	}
-	
-	setSheetId(sheetId) { 
+
+	setSheetId(sheetId) {
 		storage.setKey('currentSheetId', sheetId);
-		this.currentSheetId = sheetId; 
+		this.currentSheetId = sheetId;
 	}
 
-	getSheetId() { 
+	getSheetId() {
 		return this.currentSheetId || storage.getKey('currentSheetId') || null;
 	}
 
 	// Check if the Google Drive folder exists, if not, create it
-	checkOrCreateFolder(folderName="test") {
-		notifyWatch('Checking for Google Drive folder in google-api.js...'); 
+	checkOrCreateFolder(folderName = 'test') {
+		notifyWatch('Checking for Google Drive folder in google-api.js...');
 
 		if (this.getfolderId()) {
-			notifyWatch('Promise Resolved: In g-api.js, verified that a folder already exists');
+			notifyWatch(
+				'Promise Resolved: In g-api.js, verified that a folder already exists',
+			);
 
 			return Promise.resolve('verified that a folder already exists');
 		}
 
-		return this // return a promise from this function
-		.createNewGoogleDriveFolder(folderName)
-		.then((response) => {
-			this.setFolderId(response.id);
+		return this.createNewGoogleDriveFolder(folderName) // return a promise from this function
+			.then((response) => {
+				this.setFolderId(response.id);
 
-			notifyWatch(`Promise Resolved: In g-api.js, made new GD folder: ${response.name} (ID: ${response.id}) and key: ${storage.getKey('zeppGoogleFolderId')}`);
+				notifyWatch(
+					`Promise Resolved: In g-api.js, made new GD folder: ${response.name} (ID: ${response.id}) and key: ${storage.getKey('zeppGoogleFolderId')}`,
+				);
 
-			return Promise.resolve('folder creation success'); // return a resolved promise
-		})
-		.catch((error) => {
-			notifyWatch(`Promise Rejected: In g-api.js, failed to create a new Google Drive folder: ${error.message}`);
+				return Promise.resolve('folder creation success'); // return a resolved promise
+			})
+			.catch((error) => {
+				notifyWatch(
+					`Promise Rejected: In g-api.js, failed to create a new Google Drive folder: ${error.message}`,
+				);
 
-			return Promise.reject(`failed to create a new Google Drive folder: ${error.message}`); // return a rejected promise
-		});
+				return Promise.reject(
+					`failed to create a new Google Drive folder: ${error.message}`,
+				); // return a rejected promise
+			});
 	}
-	
+
 	// Create a new Google Sheet assuming prerequisites are met (i.e. the folder exists)
 	createNewSheet(newDay = false) {
 		notifyWatch('Calling createNewSheet() in google-api.js...');
@@ -88,16 +95,19 @@ export class GoogleApi {
 
 		const today = new Date();
 		const dateTitle = today.toISOString().split('T')[0]; // e.g., "2025-01-24"
-	
-		return this
-			.createNewGoogleSheet(`zepp ${dateTitle}`, folderId) // createNewGoogleSheet will use the setter method to set the sheetId instance variable before .then() happens
+
+		return this.createNewGoogleSheet(`zepp ${dateTitle}`, folderId) // createNewGoogleSheet will use the setter method to set the sheetId instance variable before .then() happens
 			.then((response) => {
-				notifyWatch(`Promise Resolved: In g-api.js, made a new Google Sheet: ${response.spreadsheetId} in folder ${folderId}`); 
+				notifyWatch(
+					`Promise Resolved: In g-api.js, made a new Google Sheet: ${response.spreadsheetId} in folder ${folderId}`,
+				);
 
 				return Promise.resolve('Sheet creation success'); // return a resolved promise
 			})
 			.catch((error) => {
-				notifyWatch(`Promise Rejected: In g-api.js, failed to create a new Google Sheet: ${JSON.stringify(error.message)}`);
+				notifyWatch(
+					`Promise Rejected: In g-api.js, failed to create a new Google Sheet: ${JSON.stringify(error.message)}`,
+				);
 
 				return Promise.reject(`Failed to create new sheet: ${error.message}`); // return a rejected promise
 			});
@@ -168,9 +178,7 @@ export class GoogleApi {
 			];
 		});
 
-		//TODO not working rn
 		// Add headers to the data if requested
-
 		const formattedData = addHeaders ? [headers, ...dataRows] : dataRows;
 
 		return this.#internalSendDataToGoogleSheets(formattedData).then(
@@ -227,10 +235,10 @@ export class GoogleApi {
 	 * Create a new Google Sheet
 	 *
 	 * @param {string} title The title of the new spreadsheet
-	 * @param {string | null} folderId The ID of the folder in which to create the new spreadsheet 
+	 * @param {string | null} folderId The ID of the folder in which to create the new spreadsheet
 	 * @returns {Promise<object>} The response from the Google Sheets API with the created spreadsheet's details
 	 */
-	createNewGoogleSheet(title, folderId=null) {
+	createNewGoogleSheet(title, folderId = null) {
 		const url = 'https://sheets.googleapis.com/v4/spreadsheets';
 		const body = {
 			properties: {
@@ -320,55 +328,67 @@ export class GoogleApi {
 	 * @param {string} folderName - The name of the new folder to create.
 	 * @returns {Promise<object>} - The response from the Google Drive API with the created folder's details
 	 */
-	createNewGoogleDriveFolder(folderName="test") {
-		return this.svc.httpRequest({
-			method: 'POST',
-			url: 'https://www.googleapis.com/drive/v3/files',
-			headers: {
-				Authorization: `Bearer ${this.accessToken}`,
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				name: folderName,
-				mimeType: 'application/vnd.google-apps.folder',
-			}),
-		}).then(({ status, body }) => {
-			if (typeof body === 'string') {
-				body = JSON.parse(body);
-			}
-			if (status === 200 || status === 201) {
-				notifyWatch(`Inside google-api.js, via createNewGoogleDriveFolder(): Folder created: ${body.id}`); 
-				return body;
-			}
-			notifyWatch(`Inside google-api.js, via createNewGoogleDriveFolder(): Failed to create folder: ${body.error?.message || status}`); 
-			return Promise.reject(`Inside google-api.js, via createNewGoogleDriveFolder(): Failed to create folder: ${body.error?.message || status}`);
-		});
+	createNewGoogleDriveFolder(folderName = 'test') {
+		return this.svc
+			.httpRequest({
+				method: 'POST',
+				url: 'https://www.googleapis.com/drive/v3/files',
+				headers: {
+					Authorization: `Bearer ${this.accessToken}`,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					name: folderName,
+					mimeType: 'application/vnd.google-apps.folder',
+				}),
+			})
+			.then(({ status, body }) => {
+				if (typeof body === 'string') {
+					body = JSON.parse(body);
+				}
+				if (status === 200 || status === 201) {
+					notifyWatch(
+						`Inside google-api.js, via createNewGoogleDriveFolder(): Folder created: ${body.id}`,
+					);
+					return body;
+				}
+				notifyWatch(
+					`Inside google-api.js, via createNewGoogleDriveFolder(): Failed to create folder: ${body.error?.message || status}`,
+				);
+				return Promise.reject(
+					`Inside google-api.js, via createNewGoogleDriveFolder(): Failed to create folder: ${body.error?.message || status}`,
+				);
+			});
 	}
 
 	/**
 	 * Searches for a folder in Google Drive
 	 *
 	 * @param {string} folderName - The name of the new folder to search for
-	 * @returns {Promise<object>} - The response from the Google Drive API 
+	 * @returns {Promise<object>} - The response from the Google Drive API
 	 */
 	searchGoogleDriveFolder(folderName) {
-		return this.svc.httpRequest({
-		  method: 'GET',
-		  url: `https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-		  headers: {
-			Authorization: `Bearer ${this.accessToken}`,
-		  },
-		}).then(({ status, body }) => {
-		  if (typeof body === 'string') {
-			body = JSON.parse(body);
-		  }
-		  if (status === 200) {
-			return body.files || []; // Return array of matching folders
-		  }
-		  notifyWatch(`Failed to search for folder: ${body.error?.message || status}`); 
-		  return Promise.reject(`Failed to search for folder: ${body.error?.message || status}`);
-		});
-	  }
-	  
-
+		return this.svc
+			.httpRequest({
+				method: 'GET',
+				url: `https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+				headers: {
+					Authorization: `Bearer ${this.accessToken}`,
+				},
+			})
+			.then(({ status, body }) => {
+				if (typeof body === 'string') {
+					body = JSON.parse(body);
+				}
+				if (status === 200) {
+					return body.files || []; // Return array of matching folders
+				}
+				notifyWatch(
+					`Failed to search for folder: ${body.error?.message || status}`,
+				);
+				return Promise.reject(
+					`Failed to search for folder: ${body.error?.message || status}`,
+				);
+			});
+	}
 }
