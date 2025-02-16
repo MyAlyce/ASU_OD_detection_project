@@ -11,6 +11,7 @@
 	},
 	"dependencies": {
 		"@silver-zepp/easy-storage": "^1.6.7-b",
+		"@silver-zepp/sequence-bg": "^1.0.4",
 		"@zeppos/zml": "^0.0.29",
 		"buffer": "^4.9.2"
 	},
