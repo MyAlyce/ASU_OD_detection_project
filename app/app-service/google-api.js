@@ -1,26 +1,10 @@
 import * as notificationMgr from '@zos/notification';
-
-// use to debug
-const debug = true;
-const notifyWatch = (content) => {
-	if (debug) {
-		notificationMgr.notify({
-			title: 'MyAlyce',
-			content,
-			actions: [],
-		});
-	}
-};
-
-const storage = getApp().globals.storage;
-
 import {
 	GOOGLE_API_CLIENT_ID,
 	GOOGLE_API_CLIENT_SECRET,
 } from '../google-api-constants';
-
+// use to debug
 const storage = getApp().globals.storage;
-
 export class GoogleApi {
 	constructor(svc, accessToken, refreshToken, expiresAt) {
 		this.svc = svc;
@@ -561,3 +545,14 @@ export class GoogleApi {
 			});
 	}
 }
+
+const debug = false;
+const notifyWatch = (content) => {
+	if (debug) {
+		notificationMgr.notify({
+			title: 'MyAlyce',
+			content,
+			actions: [],
+		});
+	}
+};
