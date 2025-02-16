@@ -3,10 +3,11 @@ import {
 	GOOGLE_API_CLIENT_ID,
 	GOOGLE_API_CLIENT_SECRET,
 } from '../google-api-constants';
-// use to debug
+
 const storage = getApp().globals.storage;
+
 export class GoogleApi {
-	constructor(svc, accessToken, refreshToken, expiresAt) {
+	constructor(svc, accessToken, refreshToken, expiryDate) {
 		this.svc = svc;
 
 		this.accessToken = accessToken;
@@ -227,13 +228,12 @@ export class GoogleApi {
 	#refreshAccessToken() {
 		// Check if the access token is expiring in the next 5 minutes
 		const now = new Date();
-		const expiryDate = new Date(this.expiresAt);
+		const expiryDate = new Date(this.expiryDate);
 		const isExpired = expiryDate - now < 5 * 60 * 1000;
 		if (!isExpired) {
 			return Promise.resolve();
 		}
 
-		console.log('Refreshing access token...');
 		// Refresh the access token
 		const params = {
 			grant_type: 'refresh_token',
@@ -253,23 +253,11 @@ export class GoogleApi {
 					if (typeof body === 'string') {
 						body = JSON.parse(body);
 					}
-
-					//console.log(`Spreadsheet "${title}" created successfully!`, body);
-
 					this.setSheetId(body.spreadsheetId); // Save the ID of the new sheet
-
 					if (folderId) {
 						return this.moveFileToFolder(body.spreadsheetId, folderId)
-							.then(() => {
-								//console.log(`Spreadsheet moved to folder ${folderId}`);
-
-								return body; // Ensure we return the spreadsheet details after moving
-							})
-							.catch((moveError) => {
-								//console.warn(`Failed to move spreadsheet into the proper folder: ${moveError.message}`);
-
-								return body; // Return the spreadsheet details even if moving fails
-							});
+							.then(() => body)
+							.catch((_err) => body);
 					}
 
 					return body;
@@ -277,7 +265,6 @@ export class GoogleApi {
 				return Promise.reject(`Failed to create spreadsheet: ${status}`);
 			})
 			.catch((err) => {
-				console.error('Error creating new spreadsheet:', err);
 				throw err;
 			});
 	}
@@ -414,31 +401,17 @@ export class GoogleApi {
 					if (typeof body === 'string') {
 						body = JSON.parse(body);
 					}
-
-					//console.log(`Spreadsheet "${title}" created successfully!`, body);
-
 					this.setSheetId(body.spreadsheetId); // Save the ID of the new sheet
-
 					if (folderId) {
 						return this.moveFileToFolder(body.spreadsheetId, folderId)
-							.then(() => {
-								//console.log(`Spreadsheet moved to folder ${folderId}`);
-
-								return body; // Ensure we return the spreadsheet details after moving
-							})
-							.catch((moveError) => {
-								//console.warn(`Failed to move spreadsheet into the proper folder: ${moveError.message}`);
-
-								return body; // Return the spreadsheet details even if moving fails
-							});
+							.then(() => body)
+							.catch((_err) => body);
 					}
-
 					return body;
 				}
 				return Promise.reject(`Failed to create spreadsheet: ${status}`);
 			})
 			.catch((err) => {
-				console.error('Error creating new spreadsheet:', err);
 				throw err;
 			});
 	}
@@ -470,7 +443,6 @@ export class GoogleApi {
 				}
 			})
 			.catch((err) => {
-				console.error('Error moving file to folder:', err);
 				throw err;
 			});
 	}
