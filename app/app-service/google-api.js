@@ -115,7 +115,7 @@ export class GoogleApi {
 	 * @param {object[]} data data to send to Google Sheets, as an array of objects
 	 * @returns {Promise<object>} the response from the Google Sheets API
 	 */
-	sendDataToGoogleSheets(data) {
+	sendDataToGoogleSheets(data, addHeaders = false) {
 		/**
 		 * Google Sheets API requires data to be a 2D array where every element is an array of values for a given row
 		 * (think of it in terms of rows/columns in a spreadsheet)
@@ -169,7 +169,7 @@ export class GoogleApi {
 		});
 
 		//TODO not working rn
-		const addHeaders = (this.currentSheetId === null); // If we don't have a sheet ID, we're creating a new sheet and need to add headers. 
+		// Add headers to the data if requested
 
 		const formattedData = addHeaders ? [headers, ...dataRows] : dataRows;
 

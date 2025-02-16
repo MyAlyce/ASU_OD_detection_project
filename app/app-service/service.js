@@ -12,34 +12,9 @@ const storage = getApp().globals.storage;
 const tsdb = getApp().globals.tsdb;
 const debug = true;
 const SEND_INTERVAL = 1; // in minutes
+const SEND_INTERVAL_FOR_TEST = 3; // in minutes; use to simulate onPerDay() calls
 
-
-//should run in onPerMinute() if and only if both the folder and sheet exist; data should be passed in from getMetrics()
-function sendDataToGoogle(googleApi, data) {
-	notifyWatch('Sending data to Google Sheets...'); // for debug
-
-	const fiveMinutesAgo = Date.now() - 6 * 60 * 1000;
-	const now = Date.now();
-	notifyWatch(`data ${tsdb.retrieveDataSeries(fiveMinutesAgo, now)}`);
-
-	//const data = [this.getMetrics()];
-
-	// todo: connectStatus() to check if the phone is connected
-	googleApi
-		.sendDataToGoogleSheets(data)
-		.then((res) => {
-			this.log('Successfully wrote to Google Sheets', res.message);
-			notifyWatch(res.message);
-			// tsdb.purge(fiveMinutesAgo);
-		})
-		.catch((error) => {
-			this.log('Failed to write to Google Sheets', error.message);
-			notifyWatch(
-				`Failed to write to Google Sheets: ${JSON.stringify(error.message)}`,
-			);
-			// TODO save to tsdb for retry later
-		});
-}
+let headersAdded = storage.getKey('headersAdded') || "no" // if DNE, that means it is the first time sending metrics to Sheets so we SHOULD add headers
 
 AppService(
 	BasePage({
@@ -98,7 +73,7 @@ AppService(
 				}
 			});
 
-//TODO modify this for correctness after onPerMinute() is working
+			//TODO verify this for correctness 
 			timeSensor.onPerDay(() => {
 				this.log(
 					`Time report: ${timeSensor.getDay()}:${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
@@ -107,7 +82,28 @@ AppService(
 
 				googleApi.createNewSheet(true) // every day, create a new sheet for that day and set it as the current sheet
 
+				headersAdded = "no"; // set headersAdded to no so that we add headers again
+				storage.setKey(headersAdded, "no"); // set headersAdded to no in storage as well
 			});
+
+			//FOR DEBUG, to verify the above ^ functionality
+			// timeSensor.onPerMinute(() => {
+			// 	this.log(
+			// 		`Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
+			// 	);
+
+			// 	// Every minute, save metrics to TSDB
+			// 	// saveToTSDB(this.getMetrics());
+			// 	if (timeSensor.getMinutes() % SEND_INTERVAL_FOR_TEST == 0) {
+			// 		this.log(
+			// 			`Time report: ${timeSensor.getDay()}:${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
+			// 			// TODO change this to be more clear depending on what format you want
+			// 		);
+	
+			// 		googleApi.createNewSheet(true) // every day, create a new sheet for that day and set it as the current sheet
+			// 	}
+			// });
+
 		},
 		getMetrics() {
 			const deviceInfo = getDeviceInfo();
@@ -139,8 +135,20 @@ AppService(
 
 			// todo: connectStatus() to check if the phone is connected
 			googleApi
-				.sendDataToGoogleSheets(data)
+				.sendDataToGoogleSheets(data, headersAdded=="no") // should add headers if a new day happens (new sheet) or on the first run of the current sheet
 				.then((res) => {
+					if (headersAdded == "no") {
+						storage.setKey('headersAdded', 'yes'); // set headersAdded to 'yes' so that we don't add headers again
+						headersAdded = "yes";
+					}
+
+					//headersAdded starts as no, so we add headers in the first run
+					// in sendMetrics.....
+					// since headersAdded is no
+					// -set headersAdded to yes in storage, and then set headersAdded in general to yes
+					// -that means if we stop the service and start again, headersAdded will initalize as "yes" in onInit() because it was set in storage earlier
+					// also in onPerDay() we must set headersAdded to "no" so that we add headers again
+
 					this.log('Successfully wrote to Google Sheets', res.message);
 					notifyWatch(res.message);
 					// tsdb.purge(fiveMinutesAgo);
