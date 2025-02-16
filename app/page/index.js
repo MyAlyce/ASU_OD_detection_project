@@ -11,6 +11,12 @@ import {
 	STOP_BUTTON,
 } from 'zosLoader:./index.[pf].layout.js';
 
+import {
+	onClickSleepButton,
+	getSleepInfo,
+	getStageConstantObj,
+} from './sleepFunctions.js';
+
 const permissions = ['device:os.bg_service'];
 const service = 'app-service/service';
 const storage = getApp().globals.storage;
@@ -21,10 +27,10 @@ Page(
 	BasePage({
 		state: {
 			temp: null,
-			permissions: {},
+			permissions: {}, // Will hold the permissions data
 		},
 		onInit(params) {
-			console.log('Index Page onInit invoked');
+			console.log('Index PageonInit invoked');
 
 			// Log the entire params object to see the received data
 			console.log('Received params:', params);
@@ -78,11 +84,11 @@ Page(
 			})
 				.then((res) => {
 					hmUI.showToast({
-						text: 'token: ' + res.accessToken,
+						text: `token: ${res.accessToken} expires at ${res.expiresAt}`,
 					});
 					storage.setKey('token', res.accessToken);
 					storage.setKey('refreshToken', res.refreshToken);
-					storage.setKey('expiresIn', res.expiresAt);
+					storage.setKey('expiresAt', res.expiresAt);
 				})
 				.catch((err) => {
 					hmUI.showToast({
@@ -138,7 +144,14 @@ Page(
 
 			hmUI.createWidget(hmUI.widget.BUTTON, {
 				...SLEEP_BUTTON,
-				click_func: this.onClickSleepButton.bind(this),
+				click_func: () => {
+					const jsonstringPermissions = JSON.stringify(
+						this?.state?.permissions,
+					);
+					console.log('JSON string of permissions:', jsonstringPermissions);
+
+					onClickSleepButton(jsonstringPermissions);
+				},
 			});
 
 			hmUI.createWidget(hmUI.widget.BUTTON, {
@@ -170,90 +183,7 @@ Page(
 				});
 				storage.setKey('token', req.params.accessToken);
 				storage.setKey('refreshToken', req.params.refreshToken);
-				storage.setKey('expiresIn', req.params.expiresIn);
-			}
-		},
-
-		onClickSleepButton() {
-			console.log('Sleep button pressed');
-
-			// Log the current state and permissions to see what data is available
-			console.log('Current state:', JSON.stringify(this.state));
-
-			// Access permissions from the state
-			if (this.state.permissions) {
-				Object.entries(this.state.permissions).forEach(([key, value]) => {
-					if (value === true) {
-						console.log(`Permission for ${key} is granted.`);
-
-						// Actual data extraction based on the granted permission
-						switch (key) {
-							case 'sleepScore':
-								// Get the sleep score using the `getInfo` method
-								this.getSleepInfo('score');
-								break;
-							case 'startEndTime':
-								// Get the start and end times (assuming `getInfo` provides this)
-								this.getSleepInfo('startTime');
-								this.getSleepInfo('endTime');
-								break;
-							case 'deepSleepTime':
-								// Get the deep sleep time using `getInfo`
-								this.getSleepInfo('deepTime');
-								break;
-							case 'totalSleepTime':
-								// Get the total sleep time using `getInfo`
-								this.getSleepInfo('totalTime');
-								break;
-							case 'wakeStage':
-								// Get the wake stage using `getStageConstantObj`
-								this.getStageConstantObj('WAKE_STAGE');
-								break;
-							case 'remStage':
-								// Get the REM stage using `getStageConstantObj`
-								this.getStageConstantObj('REM_STAGE');
-								break;
-							case 'lightStage':
-								// Get the light sleep stage using `getStageConstantObj`
-								this.getStageConstantObj('LIGHT_STAGE');
-								break;
-							case 'deepStage':
-								// Get the deep sleep stage using `getStageConstantObj`
-								this.getStageConstantObj('DEEP_STAGE');
-								break;
-							default:
-								console.log(`No action defined for permission: ${key}`);
-						}
-					} else {
-						console.log(`Permission for ${key} is denied.`);
-					}
-				});
-			} else {
-				console.log('No permissions found in state.');
-			}
-		},
-
-		// Extract sleep info (getInfo method)
-		getSleepInfo(infoKey) {
-			// Using the ZeppOS Sleep module to fetch the sleep info
-			const info = sleep.getInfo();
-
-			if (info && info.hasOwnProperty(infoKey)) {
-				console.log(`${infoKey}: ${info[infoKey]}`);
-			} else {
-				console.log(`No data for ${infoKey}`);
-			}
-		},
-
-		// Extract stage constant
-		getStageConstantObj(stageKey) {
-			// Using the ZeppOS Sleep module to fetch stage constants
-			const sleepStageConstants = sleep.getStageConstantObj();
-
-			if (sleepStageConstants && sleepStageConstants.hasOwnProperty(stageKey)) {
-				console.log(`${stageKey}: ${sleepStageConstants[stageKey]}`);
-			} else {
-				console.log(`No data for ${stageKey}`);
+				storage.setKey('expiresAt', req.params.expiresAt);
 			}
 		},
 	}),
@@ -269,7 +199,7 @@ const startAppService = (token) => {
 			console.log('service started complete_func:', JSON.stringify(info));
 			hmUI.showToast({
 				text: info.result
-					? 'Service started' + token
+					? 'Service started: ' + token
 					: 'Service failed to start',
 			});
 		},

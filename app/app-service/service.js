@@ -23,7 +23,9 @@ AppService(
 			const expiryDate = storage.getKey('expiresAt');
 			const googleApi = new GoogleApi(this, token, refreshToken, expiryDate);
 
-			notifyWatch(`Starting service, token is here? ${!!token}`);
+			notifyWatch(
+				`Starting service, token is here? ${!!token} expires at ${expiryDate}`,
+			);
 
 			// check if the folder exists, and if not, create it; then create a new sheet before proceeding
 			googleApi

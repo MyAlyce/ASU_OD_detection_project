@@ -14,9 +14,17 @@ const notifyWatch = (content) => {
 
 const storage = getApp().globals.storage;
 
+import {
+	GOOGLE_API_CLIENT_ID,
+	GOOGLE_API_CLIENT_SECRET,
+} from '../google-api-constants';
+
+const storage = getApp().globals.storage;
+
 export class GoogleApi {
-	constructor(svc, accessToken, refreshToken, expiryDate) {
+	constructor(svc, accessToken, refreshToken, expiresAt) {
 		this.svc = svc;
+
 		this.accessToken = accessToken;
 		this.refreshToken = refreshToken;
 		this.expiryDate = expiryDate;
@@ -113,12 +121,6 @@ export class GoogleApi {
 			});
 	}
 
-	// Write a function to refresh the access token
-	// This function should be called before sending data to Google Sheets
-	// The function should check if the access token is expired and refresh it if necessary
-	// The function should return a promise that resolves with the new access token
-	refreshAccessToken() {}
-
 	/**
 	 * Public-facing function to send data to Google Sheets
 	 *
@@ -213,21 +215,188 @@ export class GoogleApi {
 
 		// const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=RAW`;
 		const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+
+		return this.#refreshAccessToken().then(() => {
+			return this.svc
+				.httpRequest({
+					method: 'POST',
+					url,
+					body: JSON.stringify(body),
+					headers: {
+						Authorization: `Bearer ${this.accessToken}`,
+						'Content-Type': 'application/json',
+					},
+				})
+				.then(({ status, statusText, headers, body }) => {
+					if (typeof body === 'string') {
+						try {
+							body = JSON.parse(body);
+						} catch (e) {
+							return Promise.reject({ status, body: 'Invalid JSON response' });
+						}
+					}
+					return { status, body };
+				});
+		});
+	}
+
+	#refreshAccessToken() {
+		// Check if the access token is expiring in the next 5 minutes
+		const now = new Date();
+		const expiryDate = new Date(this.expiresAt);
+		const isExpired = expiryDate - now < 5 * 60 * 1000;
+		if (!isExpired) {
+			return Promise.resolve();
+		}
+
+		console.log('Refreshing access token...');
+		// Refresh the access token
+		const params = {
+			grant_type: 'refresh_token',
+			client_id: GOOGLE_API_CLIENT_ID,
+			client_secret: GOOGLE_API_CLIENT_SECRET,
+			refresh_token: this.refreshToken,
+		};
+
 		return this.svc
 			.httpRequest({
 				method: 'POST',
+				url: 'https://oauth2.googleapis.com/token',
+				body: JSON.stringify(params),
+			})
+			.then(({ status, body }) => {
+				if (status === 200 || status === 201) {
+					if (typeof body === 'string') {
+						body = JSON.parse(body);
+					}
+
+					//console.log(`Spreadsheet "${title}" created successfully!`, body);
+
+					this.setSheetId(body.spreadsheetId); // Save the ID of the new sheet
+
+					if (folderId) {
+						return this.moveFileToFolder(body.spreadsheetId, folderId)
+							.then(() => {
+								//console.log(`Spreadsheet moved to folder ${folderId}`);
+
+								return body; // Ensure we return the spreadsheet details after moving
+							})
+							.catch((moveError) => {
+								//console.warn(`Failed to move spreadsheet into the proper folder: ${moveError.message}`);
+
+								return body; // Return the spreadsheet details even if moving fails
+							});
+					}
+
+					return body;
+				}
+				return Promise.reject(`Failed to create spreadsheet: ${status}`);
+			})
+			.catch((err) => {
+				console.error('Error creating new spreadsheet:', err);
+				throw err;
+			});
+	}
+
+	/**
+	 * Move a file to a specified Google Drive folder
+	 *
+	 * @param {string} fileId The ID of the file to move
+	 * @param {string} folderId The ID of the folder to move the file into
+	 * @returns {Promise<void>}
+	 */
+	moveFileToFolder(fileId, folderId) {
+		const url = `https://www.googleapis.com/drive/v3/files/${fileId}?addParents=${folderId}&removeParents=root&fields=id,parents`;
+
+		return this.svc
+			.httpRequest({
+				method: 'PATCH',
 				url,
-				body: JSON.stringify(body),
 				headers: {
 					Authorization: `Bearer ${this.accessToken}`,
 					'Content-Type': 'application/json',
 				},
 			})
-			.then(({ status, statusText, headers, body }) => {
+			.then(({ status, body }) => {
+				if (status === 200) {
+					console.log(`File ${fileId} moved to folder ${folderId}`);
+				} else {
+					return Promise.reject(`Failed to move file: ${status}`);
+				}
+			})
+			.catch((err) => {
+				console.error('Error moving file to folder:', err);
+				throw err;
+			});
+	}
+
+	/**
+	 * Create a new folder in Google Drive
+	 *
+	 * @param {string} folderName - The name of the new folder to create.
+	 * @returns {Promise<object>} - The response from the Google Drive API with the created folder's details
+	 */
+	createNewGoogleDriveFolder(folderName = 'test') {
+		return this.svc
+			.httpRequest({
+				method: 'POST',
+				url: 'https://www.googleapis.com/drive/v3/files',
+				headers: {
+					Authorization: `Bearer ${this.accessToken}`,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					name: folderName,
+					mimeType: 'application/vnd.google-apps.folder',
+				}),
+			})
+			.then(({ status, body }) => {
 				if (typeof body === 'string') {
 					body = JSON.parse(body);
 				}
-				return { status, body };
+				if (status === 200 || status === 201) {
+					notifyWatch(
+						`Inside google-api.js, via createNewGoogleDriveFolder(): Folder created: ${body.id}`,
+					);
+					return body;
+				}
+				notifyWatch(
+					`Inside google-api.js, via createNewGoogleDriveFolder(): Failed to create folder: ${body.error?.message || status}`,
+				);
+				return Promise.reject(
+					`Inside google-api.js, via createNewGoogleDriveFolder(): Failed to create folder: ${body.error?.message || status}`,
+				);
+			});
+	}
+
+	/**
+	 * Searches for a folder in Google Drive
+	 *
+	 * @param {string} folderName - The name of the new folder to search for
+	 * @returns {Promise<object>} - The response from the Google Drive API
+	 */
+	searchGoogleDriveFolder(folderName) {
+		return this.svc
+			.httpRequest({
+				method: 'GET',
+				url: `https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+				headers: {
+					Authorization: `Bearer ${this.accessToken}`,
+				},
+			})
+			.then(({ status, body }) => {
+				if (typeof body === 'string') {
+					body = JSON.parse(body);
+				}
+				if (status === 200) {
+					return body.files || []; // Return array of matching folders
+				}
+				notifyWatch(
+					`Failed to search for folder: ${body.error?.message || status}`,
+				);
+				return Promise.reject(
+					`Failed to search for folder: ${body.error?.message || status}`,
+				);
 			});
 	}
 

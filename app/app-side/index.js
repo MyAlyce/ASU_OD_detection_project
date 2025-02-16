@@ -27,10 +27,25 @@ AppSideService(
 			}
 		},
 
+		onCall(req) {
+			console.log(`Method ==> ${req.method}`);
+			if (req.method === 'SET_TOKEN_SETTINGS') {
+				settingsLib.setItem(
+					'googleAuthData',
+					JSON.stringify({
+						access_token: req.params.accessToken,
+						refresh_token: req.params.refreshToken,
+						expires_at: req.params.expiresAt,
+					}),
+				);
+			}
+		},
+
 		onSettingsChange({ key, newValue, oldValue }) {
 			console.log('onSettingsChange', key, newValue, oldValue);
 			console.log(settingsLib.getAll());
-			if (key === 'googleAuthData') {
+
+			if (key === 'googleAuthData' && newValue) {
 				const parsedValue = JSON.parse(newValue);
 				console.log('googleAuthData changed');
 				this.call({
