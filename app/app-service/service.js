@@ -15,6 +15,7 @@ const SEND_INTERVAL = 1; // in minutes
 const SEND_INTERVAL_FOR_TEST = 3; // in minutes; use to simulate onPerDay() calls
 
 let headersAdded = storage.getKey('headersAdded') || "no" // if DNE, that means it is the first time sending metrics to Sheets so we SHOULD add headers
+let currentDay = storage.getKey('currentDay') || timeSensor.getDate(); // get the current day number, 1-31, of the month
 
 AppService(
 	BasePage({
@@ -59,6 +60,17 @@ AppService(
 					`Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
 				);
 
+				// if it's say, 2/15 12:00 AM right now, the currentDay value above will still be 14 (of the previous day) but instantaneousDay will be 15
+				const instantaneousDay = timeSensor.getDate(); // get the current day number at this very moment, 1-31, of the month
+				if (currentDay != instantaneousDay) { // if the current day in storage is not the same as the instantaneous day, then we have a new day
+					currentDay = instantaneousDay; // set the current day in storage to the instantaneous day
+					storage.setKey('currentDay', instantaneousDay); // store the current day in storage
+
+					googleApi.createNewSheet(true) // every day, create a new sheet for that day and set it as the current sheet
+					headersAdded = "no"; // set headersAdded to no so that we add headers again
+					storage.setKey(headersAdded, "no"); // set headersAdded to no in storage as well
+				}
+
 				// Every minute, save metrics to TSDB
 				// saveToTSDB(this.getMetrics());
 				if (timeSensor.getMinutes() % SEND_INTERVAL == 0) {
@@ -73,20 +85,23 @@ AppService(
 				}
 			});
 
-			//TODO verify this for correctness 
-			timeSensor.onPerDay(() => {
-				this.log(
-					`Time report: ${timeSensor.getDay()}:${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
-					// TODO change this to be more clear depending on what format you want
-				);
+			// THIS CAUSES A RACE CONDITION with onPerMinute() above
+			//------------------------------------------
+			// timeSensor.onPerDay(() => {
+			// 	this.log(
+			// 		`Time report: ${timeSensor.getDay()}:${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
+			// 		// TODO change this to be more clear depending on what format you want
+			// 	);
 
-				googleApi.createNewSheet(true) // every day, create a new sheet for that day and set it as the current sheet
+			// 	googleApi.createNewSheet(true) // every day, create a new sheet for that day and set it as the current sheet
 
-				headersAdded = "no"; // set headersAdded to no so that we add headers again
-				storage.setKey(headersAdded, "no"); // set headersAdded to no in storage as well
-			});
+			// 	headersAdded = "no"; // set headersAdded to no so that we add headers again
+			// 	storage.setKey(headersAdded, "no"); // set headersAdded to no in storage as well
+			// });
+			//------------------------------------------
 
-			//FOR DEBUG, to verify the above ^ functionality
+			//FOR DEBUG, to verify the above onPerDay ^ functionality
+			//------------------------------------------
 			// timeSensor.onPerMinute(() => {
 			// 	this.log(
 			// 		`Time report: ${timeSensor.getHours()}:${timeSensor.getMinutes().toString().padStart(2, '0')}:${timeSensor.getSeconds().toString().padStart(2, '0')}`,
@@ -101,8 +116,12 @@ AppService(
 			// 		);
 	
 			// 		googleApi.createNewSheet(true) // every day, create a new sheet for that day and set it as the current sheet
+			// 		headersAdded = "no"; // set headersAdded to no so that we add headers again
+			// 		storage.setKey(headersAdded, "no"); // set headersAdded to no in storage as well
+			// 		notificationMgr.notify("in fake onPerDay, set headersAdded to no")
 			// 	}
 			// });
+			//------------------------------------------
 
 		},
 		getMetrics() {
@@ -131,7 +150,8 @@ AppService(
 			const now = Date.now();
 			const data = [this.getMetrics()];
 
-			notifyWatch(`data ${tsdb.retrieveDataSeries(fiveMinutesAgo, now)}`);
+			//notifyWatch(`data ${tsdb.retrieveDataSeries(fiveMinutesAgo, now)}`);
+			notifyWatch("sending data; results of headersAdded: " + headersAdded=="no");
 
 			// todo: connectStatus() to check if the phone is connected
 			googleApi
@@ -140,6 +160,8 @@ AppService(
 					if (headersAdded == "no") {
 						storage.setKey('headersAdded', 'yes'); // set headersAdded to 'yes' so that we don't add headers again
 						headersAdded = "yes";
+						
+						notifyWatch("headersAdded set to yes in storage")
 					}
 
 					//headersAdded starts as no, so we add headers in the first run
