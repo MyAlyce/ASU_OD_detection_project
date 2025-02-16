@@ -29,7 +29,7 @@ export class GoogleApi {
 		this.folderId = folderId;
 	}
 
-	getfolderId() {
+	getFolderId() {
 		return this.folderId || storage.getKey('zeppGoogleFolderId') || null;
 	}
 
