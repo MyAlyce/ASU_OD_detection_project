@@ -5,14 +5,12 @@ import { HeartRate, Sleep } from '@zos/sensor';
 import { getProfile } from '@zos/user';
 import { getDeviceInfo } from '@zos/device';
 import { GoogleApi } from './google-api';
-import { SequenceBG } from '@silver-zepp/sequence-bg';
 
 const timeSensor = new Time();
 const storage = getApp().globals.storage;
 const tsdb = getApp().globals.tsdb;
 const debug = true;
 const SEND_INTERVAL = 1; // in minutes
-const SEND_INTERVAL_FOR_TEST = 3; // in minutes; use to simulate onPerDay() calls
 
 let headersAdded = storage.getKey('headersAdded') || false; // if DNE, that means it is the first time sending metrics to Sheets so we SHOULD add headers
 let currentDay = storage.getKey('currentDay') || timeSensor.getDate(); // get the current day number, 1-31, of the month
