@@ -35,7 +35,12 @@
 					"pages": [
 						"page/index",
 						"page/permissionsPage",
+<<<<<<< HEAD
 						"page/permFunctions"					
+=======
+						"page/permFunctions",
+						"page/rescuePlan"					
+>>>>>>> a696b8f07ffb232892586bab3038d6b0d13b5948
 					]
 				},
 				"app-side": {
