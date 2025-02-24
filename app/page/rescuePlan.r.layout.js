@@ -25,3 +25,16 @@ export const TEST_NOTIFICATION_BUTTON = {
     press_color: PRESS_COLOR,
     text: "Test Notif",
 };
+
+
+export const BACK_BUTTON = {
+    x: px(10),
+    y: px(200),
+    w: px(100),
+    h: px(50),
+    text_size: px(36),
+    radius: px(12),
+    normal_color: NORMAL_COLOR,
+    press_color: PRESS_COLOR,
+    text: "Back",
+};
