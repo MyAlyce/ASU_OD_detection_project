@@ -1,8 +1,6 @@
 import { Sleep } from '@zos/sensor'; // Import the Sleep module
-import { HeartRate } from '@zos/sensor';
 
 const sleep = new Sleep();
-const heart = new HeartRate();
 
 // Function to handle the sleep button click and permissions
 export function onClickSleepButton(jsonstringPermissions) {
@@ -49,9 +47,6 @@ export function onClickSleepButton(jsonstringPermissions) {
 							break;
 						case 'deepStage':
 							getStageConstantObj('DEEP_STAGE');
-							break;
-						case 'heartRate':
-							read_heartRate();
 							break;
 						default:
 							console.log(`No action defined for permission: ${key}`);

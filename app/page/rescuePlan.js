@@ -9,9 +9,9 @@ import {
 } from 'zosLoader:./rescuePlan.[pf].layout.js';
 
 Page({
-    onInit(params) {
-        console.log('Rescue Plan page initialized');
-    },
+	onInit(params) {
+		console.log('Rescue Plan page initialized');
+	},
 
     build() {
         // Create text widget
@@ -49,7 +49,21 @@ Page({
         });
     },
 
-    onDestroy() {
-        console.log('Rescue Plan page destroyed');
-    },
+	onDestroy() {
+		console.log('Rescue Plan page destroyed');
+	},
+
+	startHRObs() {
+		if (active) {
+			console.log('Observing HR');
+			heart.onCurrentChange(() => console.log(HeartRate.getCurrent()));
+		}
+	},
 });
+
+function observeHR(active) {
+	if (active) {
+		console.log('Observing HR');
+		heart.onCurrentChange(() => console.log(heart.getCurrent()));
+	}
+}
