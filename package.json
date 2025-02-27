@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"description": "",
 	"scripts": {
-		"start": "concurrently \"npm run start:server\" \"npm run start:clientbridge\"",
+		"start": "concurrently -c \"blue.bold,green.bold\" -n \"SERVER,CLIENT\" -i --default-input-target 1 \"npm run start:server\" \"npm run start:clientbridge\"",
 		"prettier:format": "prettier --write \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
 		"prettier:check": "prettier --check \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
 		"start:clientdev": "cd client && npm run dev",
