@@ -1,25 +1,22 @@
 {
-	"name": "myalyce",
+	"name": "asu_od_detection_project",
 	"version": "1.0.0",
 	"description": "",
-	"main": "app/app.js",
+	"scripts": {
+		"start": "concurrently -c \"blue.bold,green.bold\" -n \"SERVER,CLIENT\" -i --default-input-target 1 \"npm run start:server\" \"npm run start:clientbridge\"",
+		"prettier:format": "prettier --write \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
+		"prettier:check": "prettier --check \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
+		"start:clientdev": "cd client && npm run dev",
+		"start:clientbridge": "cd client && npm run bridge",
+		"start:clientpreview": "cd client && npm run preview",
+		"start:server": "cd server && npm start",
+		"install:all": "npm install && cd client && npm install && cd ../server && npm install"
+	},
+	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
-		"@zeppos/device-types": "^3.0.0",
-		"prettier": "^3.5.0"
-	},
-	"dependencies": {
-		"@silver-zepp/easy-storage": "^1.6.7-b",
-		"@silver-zepp/sequence-bg": "^1.0.4",
-		"@zeppos/zml": "^0.0.29",
-		"buffer": "^4.9.2"
-	},
-	"scripts": {
-		"prettier:format": "prettier --write \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
-		"prettier:check": "prettier --check \"**/*.{ts,tsx,js,md,mdx,css,yaml}\"",
-		"dev": "cd app && zeus dev",
-		"bridge": "cd app && zeus bridge",
-		"preview": "cd app && zeus preview"
+		"concurrently": "^9.1.2",
+		"prettier": "^3.5.2"
 	}
 }

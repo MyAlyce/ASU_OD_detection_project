@@ -1,0 +1,23 @@
+{
+	"name": "myalyce-client",
+	"version": "1.0.0",
+	"description": "",
+	"main": "app/app.js",
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@zeppos/device-types": "^3.0.0",
+		"prettier": "^3.5.0"
+	},
+	"dependencies": {
+		"@silver-zepp/easy-storage": "^1.6.7-b",
+		"@silver-zepp/sequence-bg": "^1.0.4",
+		"@zeppos/zml": "^0.0.29",
+		"buffer": "^4.9.2"
+	},
+	"scripts": {
+		"dev": "cd app && zeus dev",
+		"bridge": "cd app && zeus bridge",
+		"preview": "cd app && zeus preview"
+	}
+}
