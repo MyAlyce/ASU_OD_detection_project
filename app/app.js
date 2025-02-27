@@ -1,5 +1,6 @@
 import { BaseApp } from '@zeppos/zml/base-app';
 import EasyStorage, { EasyTSDB } from '@silver-zepp/easy-storage';
+import HRMonitor from './app-service/hrMonitor.js'; // Used for the heart rate monitoring service
 
 /**
  * The watch hosts two main storages: EasyStorage and EasyTSDB.
@@ -17,6 +18,7 @@ App(
 		},
 		onCreate() {
 			console.log('app invoke onCreate');
+			HRMonitor.start(); // Start heart rate tracking when app starts
 		},
 		onDestroy(opts) {
 			console.log('app invoke onDestroy');

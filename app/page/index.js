@@ -24,14 +24,14 @@ const permissions = ['device:os.bg_service'];
 const service = 'app-service/service';
 const storage = getApp().globals.storage;
 const sleep = new Sleep();
-let jsonstringPermissions = JSON.stringify({});
+let jsonstringPermissions = storage.getKey('permissions') || '{}'; // Retrieve stored permissions if available
 
 // Main page setup
 Page(
 	BasePage({
 		state: {
 			temp: null,
-			permissions: {}, // Will hold the permissions data
+			permissions: JSON.parse(jsonstringPermissions), // Load permissions from storage or fallback to an empty object
 		},
 		
 		onInit(params) {
@@ -75,6 +75,7 @@ Page(
 				this.state.permissions = permissions;
 				// Update the global jsonstringPermissions when permissions are set
 				jsonstringPermissions = JSON.stringify(permissions);
+				storage.setKey('permissions', jsonstringPermissions); // Store the updated permissions in storage
 				console.log('Updated global jsonstringPermissions:', jsonstringPermissions);
 			} else {
 				console.log('No permission data received or invalid format.');
@@ -178,14 +179,14 @@ Page(
 			
 						// Check the heart rate permission
 						if (permissions) {                        
-							console.log('Made it passed If Permissiosn bit');
+							console.log('Made it passed If Permissions bit');
 
 							Object.entries(permissions).forEach(([key, value]) => {
 								console.log('The key is: ', key);
 
 								if (key === 'heartRate') {
 									console.log(`Current heart rate permission: ${value}`);
-									
+									 
 									if (value === true) {
 										console.log('Heart rate permission is granted.');
 										push({
@@ -245,15 +246,6 @@ Page(
 	}),
 );
 
-// Updating the global permissions from another place (e.g., after granting or denying permission)
-function updateHeartRatePermission(isGranted) {
-    const permissions = JSON.parse(jsonstringPermissions); // Parse current permissions
-    permissions['health:heart_rate'] = isGranted; // Update the heart rate permission
-    jsonstringPermissions = JSON.stringify(permissions); // Update the global jsonstringPermissions
-
-    console.log('Updated permissions:', jsonstringPermissions);
-}
-
 // Service-related functions
 const startAppService = (token) => {
 	console.log('startAppService invoked');
@@ -291,3 +283,4 @@ const checkPermissions = () => {
 	}
 	return false;
 };
+
