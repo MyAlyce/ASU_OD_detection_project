@@ -1,4 +1,4 @@
-What is this project: Zepp app made for Amazfit Balances intended to track the user's heart and sleep data and log it onto Google Drive as well as providing an emergency relief operation if it detects a dangerous health trend (such as high heart rate).
+The MyAlyce app is made for the Amazfit Balance smartwatch on the Zepp OS platform. This repository is part of an effort by the MyAlyce team to create a platform for recovering drug addicts. Our program collects vital health data and integrates this with Google Drive/Google Sheets.
 
 How to run this project on the simulator:
 
@@ -8,3 +8,8 @@ How to run this project on the simulator:
 4. Give the emulator a few minutes, but it should eventually show the HUD of the app.
 5. You can use the console to check console.log statements and debug
 6. Refer to the [docs](https://docs.zepp.com/docs/intro/) for understanding basic syntax and architecture of Zepp
+
+For more in-depth documentation on the project and set up, see [here](https://docs.google.com/document/d/1uk0_B4wokNpXIKgyvo9FgLmtIqn8Akq9gwlsciBvDfc).
+
+> **_NOTE:_**
+> Currently, Google integration must be done on an individual basis with permission of the authors; otherwise, you will not be able to link your Google account.
