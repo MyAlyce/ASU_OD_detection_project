@@ -11,5 +11,5 @@ How to run this project on the simulator:
 
 For more in-depth documentation on the project and set up, see [here](https://docs.google.com/document/d/1uk0_B4wokNpXIKgyvo9FgLmtIqn8Akq9gwlsciBvDfc).
 
-> **_NOTE:_**
+> [!IMPORTANT]
 > Currently, Google integration must be done on an individual basis with permission of the authors; otherwise, you will not be able to link your Google account.
