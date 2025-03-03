@@ -35,8 +35,11 @@ export const ContactsTab = () => {
 
 export const AboutTab = () => Text({ style: { fontSize: '12px' } }, 'TODO');
 
+export const RescueTab = () => Text({ style: { fontSize: '12px' } }, 'TODO');
+
 export const TAB_COMPONENTS = {
 	Settings: SettingsTab,
 	Contacts: ContactsTab,
 	About: AboutTab,
+	Rescue: RescueTab,
 };
