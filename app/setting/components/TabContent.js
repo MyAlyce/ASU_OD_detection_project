@@ -1,4 +1,5 @@
 import { ContactList } from './contactList';
+import { RescuePlan } from './rescue';
 import {
 	createAuthView,
 	createShareEmailInput,
@@ -28,6 +29,7 @@ export const ContactsTab = () => {
 		return Text({}, 'No access token found. Please sign in first.');
 	}
 	const items = ContactList();
+	console.log(store);
 	return items.length
 		? items
 		: Text({}, 'No contacts found. Add some in your Settings tab.');
@@ -35,7 +37,17 @@ export const ContactsTab = () => {
 
 export const AboutTab = () => Text({ style: { fontSize: '12px' } }, 'TODO');
 
-export const RescueTab = () => Text({ style: { fontSize: '12px' } }, 'TODO');
+export const RescueTab = () => {
+	const store = useSettings();
+	if (!store.getAuthToken()) {
+		console.error('No access token found');
+		return Text({}, 'No access token found. Please sign in first.');
+	}
+	return View(
+		{ style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+		[RescuePlan()],
+	);
+};
 
 export const TAB_COMPONENTS = {
 	Settings: SettingsTab,
