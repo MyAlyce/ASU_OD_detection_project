@@ -11,40 +11,59 @@ import { useSettings } from '../context/SettingsContext';
 
 export const createAuthView = () => {
 	const settings = useSettings();
-	const authView = Auth({
-		label: PrimaryButton({
-			label: 'Sign in',
-		}),
-		authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
-		requestTokenUrl: 'https://oauth2.googleapis.com/token',
+	// const authView = Auth({
+	// 	label: PrimaryButton({
+	// 		label: 'Sign in',
+	// 	}),
+	// 	authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+	// 	requestTokenUrl: 'https://oauth2.googleapis.com/token',
+	// 	scope: 'openid email https://www.googleapis.com/auth/drive',
+	// 	clientId: GOOGLE_API_CLIENT_ID,
+	// 	clientSecret: GOOGLE_API_CLIENT_SECRET,
+	// 	oAuthParams: {
+	// 		redirect_uri: GOOGLE_API_REDIRECT_URI,
+	// 		response_type: 'code',
+	// 		include_granted_scopes: 'true',
+	// 		access_type: 'offline',
+	// 		prompt: 'consent',
+	// 	},
+	// 	onAccessToken: (token) => {
+	// 		console.log('onAccessToken', token);
+	// 	},
+	// 	onReturn: async (authBody) => {
+	// 		console.log('onReturn', authBody);
+	// 		const authData = await requestGoogleAuthData(authBody);
+	// 		console.log('authData', authData);
+	// 		authData.requested_at = new Date();
+	// 		authData.expires_at = new Date(
+	// 			authData.requested_at.getTime() + authData.expires_in * 1000,
+	// 		);
+	// 		const id = JSON.parse(
+	// 			Buffer.from(authData.id_token.split('.')[1], 'base64'),
+	// 		);
+	// 		authData.email = id.email;
+	// 		settings.setSetting('googleAuthData', JSON.stringify(authData));
+	// 		console.log('authData', authData);
+	// 	},
+	// });
+	// return authView;
+	const params = {
+		client_id: GOOGLE_API_CLIENT_ID,
+		redirect_uri: 'https://myalyce-server.vercel.app/api/google',
+		response_type: 'code',
+		include_granted_scopes: 'true',
 		scope: 'openid email https://www.googleapis.com/auth/drive',
-		clientId: GOOGLE_API_CLIENT_ID,
-		clientSecret: GOOGLE_API_CLIENT_SECRET,
-		oAuthParams: {
-			redirect_uri: GOOGLE_API_REDIRECT_URI,
-			response_type: 'code',
-			include_granted_scopes: 'true',
-			access_type: 'offline',
-			prompt: 'consent',
-		},
-		onAccessToken: (token) => {
-			console.log('onAccessToken', token);
-		},
-		onReturn: async (authBody) => {
-			console.log('onReturn', authBody);
-			const authData = await requestGoogleAuthData(authBody);
-			console.log('authData', authData);
-			authData.requested_at = new Date();
-			authData.expires_at = new Date(
-				authData.requested_at.getTime() + authData.expires_in * 1000,
-			);
-			const id = JSON.parse(
-				Buffer.from(authData.id_token.split('.')[1], 'base64'),
-			);
-			authData.email = id.email;
-			settings.setSetting('googleAuthData', JSON.stringify(authData));
-			console.log('authData', authData);
-		},
+		access_type: 'offline',
+		prompt: 'consent',
+	};
+	const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+	const authUrlParams = Object.keys(params)
+		.map((key) => `${key}=${encodeURIComponent(params[key])}`)
+		.join('&');
+	const url = `${authUrl}?${authUrlParams}`;
+	const authView = Link({ source: url }, 'Sign in123');
+	const auth = Auth({
+		onReturn: () => console.log('onReturn'),
 	});
 	return authView;
 };
