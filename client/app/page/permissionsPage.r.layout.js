@@ -109,7 +109,6 @@ export const TOGGLE_OPTIONS = [
 		w: px(200),
 		h: px(40),
 	},
-
 ];
 
 export const BACK_BUTTON = {
