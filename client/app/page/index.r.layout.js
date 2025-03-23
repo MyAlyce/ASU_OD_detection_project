@@ -1,4 +1,5 @@
 import { px } from '@zos/utils';
+
 import {
 	BUTTON_TEXT,
 	BUTTON_TEXT_STOP,
@@ -39,7 +40,7 @@ export const SLEEP_BUTTON = {
 	radius: px(12),
 	normal_color: 0xaa42ee,
 	press_color: 0xb964f0,
-	text: 'Sleep Data',
+	text: 'Data',
 };
 
 export const PERMISSIONS_BUTTON = {
@@ -53,3 +54,16 @@ export const PERMISSIONS_BUTTON = {
 	press_color: 0x487ff7,
 	text: 'Permission Data',
 };
+
+export const RESUCE_PLAN_BUTTON = {
+	x: px(260),
+	y: px(225),
+	w: px(225),
+	h: px(50),
+	text_size: px(25),
+	radius: px(12),
+	normal_color: 0x0352fc,
+	press_color: 0x487ff7,
+	text: 'Resuce Plan',
+};
+
