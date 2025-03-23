@@ -6,7 +6,7 @@ import {
 	titleText,
 	createToggleLabel,
 } from 'zosLoader:./permissionsPage.[pf].layout.js';
-import { LocalStorage } from '@zos/storage'; // Import LocalStorage only once
+import { LocalStorage } from '@zos/storage';
 
 console.log('Navigated to the permissions page');
 

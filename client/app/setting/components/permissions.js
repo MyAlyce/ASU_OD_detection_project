@@ -37,7 +37,10 @@ export const Permissions = () => {
                 const isToggled = savedState !== null ? JSON.parse(savedState) : false;
     
                 return Toggle({
-                    label: Text({ style: { fontSize: '12px' } }, key.replace(/([A-Z])/g, ' $1').trim()), // Convert camelCase to readable text
+                    label: Text(
+                        { style: { fontSize: '12px' } },
+                        key.replace(/([A-Z])/g, ' $1').trim() // Convert camelCase to readable text
+                    ),
                     value: isToggled,
                     onChange: (newValue) => {
                         // Save the new toggle state
@@ -50,5 +53,4 @@ export const Permissions = () => {
             }),
         ]
     );
-    
 };
