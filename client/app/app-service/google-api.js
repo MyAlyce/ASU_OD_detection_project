@@ -39,7 +39,7 @@ export class GoogleApi {
 	checkOrCreateFolder(folderName) {
 		notifyWatch('Checking for Google Drive folder in google-api.js...');
 
-		if (this.getfolderId()) {
+		if (this.getFolderId()) {
 			notifyWatch(
 				'Promise Resolved: In g-api.js, verified that a folder already exists',
 			);
@@ -72,13 +72,13 @@ export class GoogleApi {
 	createNewSheet(newDay = false) {
 		notifyWatch('Calling createNewSheet() in google-api.js...');
 
-		if (!this.getfolderId()) {
+		if (!this.getFolderId()) {
 			notifyWatch('Promise Rejected: No folder ID found in g-api.js');
 
 			return Promise.reject('No folder ID found');
 		}
 
-		const folderId = this.getfolderId();
+		const folderId = this.getFolderId();
 
 		if (this.getSheetId() && !newDay) {
 			notifyWatch('Promise Resolved: Sheet already exists for the current day');
