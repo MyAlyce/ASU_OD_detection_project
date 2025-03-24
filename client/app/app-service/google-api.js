@@ -36,7 +36,7 @@ export class GoogleApi {
 	}
 
 	// Check if the Google Drive folder exists, if not, create it
-	checkOrCreateFolder(folderName = 'test') {
+	checkOrCreateFolder(folderName) {
 		notifyWatch('Checking for Google Drive folder in google-api.js...');
 
 		if (this.getfolderId()) {
@@ -307,7 +307,7 @@ export class GoogleApi {
 	 * @param {string} folderName - The name of the new folder to create.
 	 * @returns {Promise<object>} - The response from the Google Drive API with the created folder's details
 	 */
-	createNewGoogleDriveFolder(folderName = 'test') {
+	createNewGoogleDriveFolder(folderName) {
 		return this.svc
 			.httpRequest({
 				method: 'POST',
@@ -453,7 +453,7 @@ export class GoogleApi {
 	 * @param {string} folderName - The name of the new folder to create.
 	 * @returns {Promise<object>} - The response from the Google Drive API with the created folder's details
 	 */
-	createNewGoogleDriveFolder(folderName = 'test') {
+	createNewGoogleDriveFolder(folderName) {
 		return this.svc
 			.httpRequest({
 				method: 'POST',

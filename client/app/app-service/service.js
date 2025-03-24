@@ -15,6 +15,7 @@ const SEND_INTERVAL = 1; // in minutes
 let headersAdded = storage.getKey('headersAdded') || false; // if DNE, that means it is the first time sending metrics to Sheets so we SHOULD add headers
 let currentDay = storage.getKey('currentDay') || timeSensor.getDate(); // get the current day number, 1-31, of the month
 
+const defaultFolderName = "Zepp - MyAlyce Folder"; // default folder name
 AppService(
 	BasePage({
 		onInit() {
@@ -29,7 +30,7 @@ AppService(
 
 			// check if the folder exists, and if not, create it; then create a new sheet before proceeding
 			googleApi
-				.checkOrCreateFolder('test')
+				.checkOrCreateFolder(defaultFolderName) // check if the folder exists, and if not, create it')
 				.then((result) => {
 					this.log('inside onInit, checkOrCreateFolder() result:', result);
 					notifyWatch(`inside onInit, checkOrCreateFolder() result: ${result}`);
