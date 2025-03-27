@@ -3,8 +3,10 @@ import {
 	GOOGLE_API_CLIENT_ID,
 	GOOGLE_API_CLIENT_SECRET,
 } from '../google-api-constants';
+import { useSettings } from '../context/SettingsContext';
 
 const storage = getApp().globals.storage;
+const settings = useSettings(); // for settings storage, to set folder ID for sharing
 
 export class GoogleApi {
 	constructor(svc, accessToken, refreshToken, expiryDate) {
@@ -19,6 +21,7 @@ export class GoogleApi {
 
 	setFolderId(folderId) {
 		storage.setKey('zeppGoogleFolderId', folderId);
+		settings.setFolderId(folderId); // Set the folder ID in the settings storage
 		this.folderId = folderId;
 	}
 

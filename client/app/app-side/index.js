@@ -24,7 +24,18 @@ AppSideService(
 					refreshToken: parsedAuthData.refresh_token,
 					expiresAt: parsedAuthData.expires_at,
 				});
-			}
+			} 
+			//TODO might be probably unneeded, since this isn't like a token it's just a static value
+			// else if (req.method === 'GET_FOLDER_ID') {
+			// 	const folderId = settingsLib.getItem('zeppGoogleFolderId');
+			// 	if (!folderId) {
+			// 	  res('No folder ID found');
+			// 	  return;
+			// 	}
+			// 	res(null, {
+			// 	  folderId: folderId
+			// 	});
+			//   }
 		},
 
 		onCall(req) {
@@ -38,7 +49,11 @@ AppSideService(
 						expires_at: req.params.expiresAt,
 					}),
 				);
-			}
+			} 
+			//TODO might be probably unneeded, since this isn't like a token it's just a static value
+			// else if (req.method === 'SET_FOLDER_ID') {
+			// 	settingsLib.setItem('zeppGoogleFolderId', req.params.folderId);
+			//   }
 		},
 
 		onSettingsChange({ key, newValue, oldValue }) {
