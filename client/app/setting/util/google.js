@@ -46,9 +46,9 @@ export const requestGoogleAuthData = async (authResponse) => {
 };
 
 export const shareFilesWithEmail = async (address, accessToken) => {
-	//const fileId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // todo remove hardcode, share with folder
-	const fileId = getFolderIdFromSettings(); // Use the folder ID from settings
-	if (!fileId) {
+	//const folderId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // todo remove hardcode, share with folder
+	const folderId = getFolderIdFromSettings(); // Use the folder ID from settings
+	if (!folderId) {
 		return { success: false, error: 'No folder ID found' };
 	}
 
@@ -60,7 +60,7 @@ export const shareFilesWithEmail = async (address, accessToken) => {
 
 	try {
 		const response = await fetch(
-			`https://www.googleapis.com/drive/v2/files/${fileId}/permissions`,
+			`https://www.googleapis.com/drive/v2/files/${folderId}/permissions`,
 			{
 				method: 'POST',
 				body,
@@ -81,14 +81,14 @@ export const shareFilesWithEmail = async (address, accessToken) => {
 };
 
 export const removeFilePermissionById = async (permissionId, accessToken) => {
-	//const fileId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // TODO: Remove hardcoding
-	const fileId = getFolderIdFromSettings(); // Use the folder ID from settings
-	if (!fileId) {
+	//const folderId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // TODO: Remove hardcoding
+	const folderId = getFolderIdFromSettings(); // Use the folder ID from settings
+	if (!folderId) {
 		return { success: false, error: 'No folder ID found' };
 	}
 
 	const response = await fetch(
-		`https://www.googleapis.com/drive/v2/files/${fileId}/permissions/${permissionId}`,
+		`https://www.googleapis.com/drive/v2/files/${folderId}/permissions/${permissionId}`,
 		{
 			method: 'DELETE',
 			headers: {
