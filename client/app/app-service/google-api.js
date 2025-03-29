@@ -22,12 +22,12 @@ export class GoogleApi {
 		this.folderId = folderId;
 
 		// Notify the app-side to update this for settings context
-		this.svc.call({
-			method: 'UPDATE_FOLDER_ID',
-			params: {
-				folderId: folderId
-			}
-		});
+		// this.svc.call({
+		// 	method: 'UPDATE_FOLDER_ID',
+		// 	params: {
+		// 		folderId: folderId
+		// 	}
+		// });
 	}
 
 	getFolderId() {
