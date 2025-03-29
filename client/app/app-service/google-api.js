@@ -25,8 +25,8 @@ export class GoogleApi {
 		this.svc.call({
 			method: 'UPDATE_FOLDER_ID',
 			params: {
-				folderId: folderId
-			}
+				folderId: folderId,
+			},
 		});
 	}
 

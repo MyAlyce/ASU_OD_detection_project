@@ -13,8 +13,7 @@ import { useSettings } from '../context/SettingsContext';
 export const getFolderIdFromSettings = () => {
 	const settings = useSettings();
 	return settings.getFolderId();
-  };
-
+};
 
 /**
  * Request Google Auth Data from Google API after receiving auth code
@@ -50,7 +49,7 @@ export const shareFilesWithEmail = async (address, accessToken) => {
 	//const fileId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // todo remove hardcode, share with folder
 	const fileId = getFolderIdFromSettings(); // Use the folder ID from settings
 	if (!fileId) {
-	  return { success: false, error: 'No folder ID found' };
+		return { success: false, error: 'No folder ID found' };
 	}
 
 	const body = JSON.stringify({
@@ -85,7 +84,7 @@ export const removeFilePermissionById = async (permissionId, accessToken) => {
 	//const fileId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // TODO: Remove hardcoding
 	const fileId = getFolderIdFromSettings(); // Use the folder ID from settings
 	if (!fileId) {
-	  return { success: false, error: 'No folder ID found' };
+		return { success: false, error: 'No folder ID found' };
 	}
 
 	const response = await fetch(

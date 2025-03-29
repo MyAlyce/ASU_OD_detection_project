@@ -24,8 +24,7 @@ AppSideService(
 					refreshToken: parsedAuthData.refresh_token,
 					expiresAt: parsedAuthData.expires_at,
 				});
-			} 
-			else if (req.method === 'GET_FOLDER_ID') {
+			} else if (req.method === 'GET_FOLDER_ID') {
 				const folderId = settingsLib.getItem('zeppGoogleFolderId');
 				if (!folderId) {
 					res('No folder ID found');
@@ -46,8 +45,7 @@ AppSideService(
 						expires_at: req.params.expiresAt,
 					}),
 				);
-			} 
-			else if (req.method === 'UPDATE_FOLDER_ID') {
+			} else if (req.method === 'UPDATE_FOLDER_ID') {
 				console.log('UPDATE_FOLDER_ID method invoked');
 				// hmUI.showToast({
 				// 	text: 'Folder ID updated for sharing: ' + req.params.folderId
