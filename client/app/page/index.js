@@ -3,12 +3,15 @@ import * as appService from '@zos/app-service';
 import { queryPermission, requestPermission } from '@zos/app';
 import hmUI from '@zos/ui';
 import { push } from '@zos/router';
-import { Sleep } from '@zos/sensor'; // Import the Sleep module
+import { Sleep } from '@zos/sensor';
+import * as notificationMgr from '@zos/notification';
+
 import {
 	START_BUTTON,
 	SLEEP_BUTTON,
 	PERMISSIONS_BUTTON,
 	STOP_BUTTON,
+	RESUCE_PLAN_BUTTON,
 } from 'zosLoader:./index.[pf].layout.js';
 
 import {
@@ -21,21 +24,21 @@ const permissions = ['device:os.bg_service'];
 const service = 'app-service/service';
 const storage = getApp().globals.storage;
 const sleep = new Sleep();
+let jsonstringPermissions = storage.getKey('permissions') || '{}'; // Retrieve stored permissions if available
 
 // Main page setup
 Page(
 	BasePage({
 		state: {
 			temp: null,
-			permissions: {}, // Will hold the permissions data
+			permissions: JSON.parse(jsonstringPermissions), // Load permissions from storage or fallback to an empty object
 		},
-		onInit(params) {
-			console.log('Index PageonInit invoked');
 
-			// Log the entire params object to see the received data
+		onInit(params) {
+			console.log('Index Page onInit invoked');
 			console.log('Received params:', params);
 
-			// Check if params is a string and parse it as JSON
+			// Ensure params is a string and parse it
 			if (typeof params === 'string') {
 				try {
 					params = JSON.parse(params); // Convert string to object
@@ -52,7 +55,6 @@ Page(
 				typeof params === 'object' &&
 				Object.keys(params).length > 1
 			) {
-				// Iterate through specific keys and store their values in state
 				const permissionKeys = [
 					'sleepScore',
 					'startEndTime',
@@ -75,7 +77,13 @@ Page(
 				});
 
 				this.state.permissions = permissions;
-				console.log('Stored permissions:', this.state.permissions);
+				// Update the global jsonstringPermissions when permissions are set
+				jsonstringPermissions = JSON.stringify(permissions);
+				storage.setKey('permissions', jsonstringPermissions); // Store the updated permissions in storage
+				console.log(
+					'Updated global jsonstringPermissions:',
+					jsonstringPermissions,
+				);
 			} else {
 				console.log('No permission data received or invalid format.');
 			}
@@ -95,11 +103,12 @@ Page(
 					hmUI.showToast({
 						text: 'Error getting token on load (not signed in?)',
 					});
-					console.error('error getting token', err);
+					console.error('Error getting token', err);
 				});
 		},
 
 		build() {
+			// Start Button
 			hmUI.createWidget(hmUI.widget.BUTTON, {
 				...START_BUTTON,
 				click_func: () => {
@@ -113,7 +122,6 @@ Page(
 						return;
 					}
 
-					// Only proceed if got token
 					if (checkPermissions()) {
 						startAppService(token);
 					} else {
@@ -122,6 +130,7 @@ Page(
 				},
 			});
 
+			// Stop Button
 			hmUI.createWidget(hmUI.widget.BUTTON, {
 				...STOP_BUTTON,
 				click_func: () => {
@@ -143,25 +152,90 @@ Page(
 				},
 			});
 
+			// Sleep Button
 			hmUI.createWidget(hmUI.widget.BUTTON, {
 				...SLEEP_BUTTON,
 				click_func: () => {
-					const jsonstringPermissions = JSON.stringify(
-						this?.state?.permissions,
+					// Use the global jsonstringPermissions directly
+					console.log(
+						'Global JSON string of permissions:',
+						jsonstringPermissions,
 					);
-					console.log('JSON string of permissions:', jsonstringPermissions);
-
 					onClickSleepButton(jsonstringPermissions);
 				},
 			});
 
+			// Permissions Button
 			hmUI.createWidget(hmUI.widget.BUTTON, {
 				...PERMISSIONS_BUTTON,
 				click_func: () => {
 					console.log('Permissions button clicked');
 					push({
-						url: 'page/permissionsPage', // No parameters passed here
+						url: 'page/permissionsPage',
 					});
+				},
+			});
+
+			// Rescue Plan Button
+			hmUI.createWidget(hmUI.widget.BUTTON, {
+				...RESUCE_PLAN_BUTTON,
+				click_func: () => {
+					console.log('Rescue Plan button clicked');
+
+					// Now using the global jsonstringPermissions
+					console.log(
+						'Global JSON string of permissions:',
+						jsonstringPermissions,
+					);
+
+					try {
+						// Parse the JSON string to access the permissions as an object
+						const permissions = JSON.parse(jsonstringPermissions);
+
+						// Log the parsed permissions object
+						console.log('Parsed permissions:', permissions);
+
+						// Check the heart rate permission
+						if (permissions) {
+							console.log('Made it passed If Permissions bit');
+
+							Object.entries(permissions).forEach(([key, value]) => {
+								console.log('The key is: ', key);
+
+								if (key === 'heartRate') {
+									console.log(`Current heart rate permission: ${value}`);
+
+									if (value === true) {
+										console.log('Heart rate permission is granted.');
+										push({
+											url: 'page/rescuePlan',
+											params: jsonstringPermissions, // Pass the updated permissions
+										});
+									} else {
+										console.log('Heart rate permission not granted.');
+										notificationMgr.notify({
+											title: 'Permission Required',
+											content:
+												'You need to enable heart permissions to continue. Do you wish to enable it?',
+											actions: [
+												{
+													text: 'Yes',
+													file: 'page/permissionsPage', // Navigate to permissions page
+												},
+												{
+													text: 'No',
+													file: 'page/index', // Go back to index page
+												},
+											],
+											vibrate: 6, // Custom vibration for alert
+										});
+									}
+								}
+							});
+						}
+					} catch (error) {
+						console.error('Error parsing global permissions:', error);
+					}
 				},
 			});
 		},
