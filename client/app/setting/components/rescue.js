@@ -53,7 +53,7 @@ export const RescuePlan = () => {
 	// Update maximum heart rate threshold
 	const updateMaxHeartRate = (value) => {
 		const rate = parseInt(value, 10);
-		if (!isNaN(rate) && rate > 60 && rate < 200) {
+		if (!isNaN(rate) && rate > 59 && rate < 201) {
 			// Reasonable heart rate range
 			const updated = { ...rescueSettings, maxHeartRate: rate };
 			saveRescueSettings(updated);
@@ -139,8 +139,8 @@ export const RescuePlan = () => {
 					),
 					Slider({
 						label: `${rescueSettings.maxHeartRate} BPM`,
-						min: 60,
-						max: 200,
+						min: 59,
+						max: 201,
 						value: rescueSettings.maxHeartRate,
 						onChange: updateMaxHeartRate,
 					}),
