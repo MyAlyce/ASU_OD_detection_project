@@ -70,7 +70,6 @@ Page({
 		// Add the back button at the bottom of the page
 		hmUI.createWidget(hmUI.widget.BUTTON, {
 			...BACK_BUTTON,
-			y: 540, // Adjust Y position for the back button
 			click_func: () => {
 				console.log('Back button clicked, preferences saved:');
 
