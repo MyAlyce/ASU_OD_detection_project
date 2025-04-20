@@ -3,8 +3,9 @@ import * as appService from '@zos/app-service';
 import { queryPermission, requestPermission } from '@zos/app';
 import hmUI from '@zos/ui';
 import { push } from '@zos/router';
-import { Sleep } from '@zos/sensor'; 
+import { Sleep } from '@zos/sensor';
 import * as notificationMgr from '@zos/notification';
+import { LocalStorage } from '@zos/storage';
 
 import {
     START_BUTTON,
@@ -178,7 +179,7 @@ Page(
                         console.log('Parsed permissions:', permissions);
 
                         // Check the heart rate permission
-                        if (permissions) {                        
+                        if (permissions) {
                             console.log('Made it passed If Permissions bit');
 
                             Object.entries(permissions).forEach(([key, value]) => {
@@ -186,7 +187,7 @@ Page(
 
                                 if (key === 'heartRate') {
                                     console.log(`Current heart rate permission: ${value}`);
-                                     
+
                                     if (value === true) {
                                         console.log('Heart rate permission is granted.');
                                         push({
@@ -219,7 +220,7 @@ Page(
                     }
                 },
             });
-            
+
         },
 
         onDestroy() {
@@ -230,6 +231,8 @@ Page(
             console.log('page onRequest invoked');
             console.log('req:', req);
             console.log('res:', res);
+
+
         },
 
         onCall(req) {
@@ -241,6 +244,34 @@ Page(
                 storage.setKey('token', req.params.accessToken);
                 storage.setKey('refreshToken', req.params.refreshToken);
                 storage.setKey('expiresAt', req.params.expiresAt);
+            } else if (req.method === 'UPDATE_PERMISSIONS') {
+                // Handle permissions update from settings
+                console.log('UPDATE_PERMISSIONS method invoked');
+                try {
+                    const permissions = req.params.permissions;
+                    if (permissions && typeof permissions === 'object') {
+                        // Update the state with the new permissions
+                        this.state.permissions = permissions;
+
+                        // Update global storage and string representation
+                        jsonstringPermissions = JSON.stringify(permissions);
+                        storage.setKey('permissions', jsonstringPermissions);
+
+                        // Update individual permission items in localStorage for the permissionsPage
+                        const localStorage = new LocalStorage();
+                        Object.keys(permissions).forEach(key => {
+                            localStorage.setItem(key, permissions[key].toString());
+                        });
+                        localStorage.setItem('userPermissions', jsonstringPermissions);
+
+                        console.log('Permissions updated from settings:', jsonstringPermissions);
+                        hmUI.showToast({
+                            text: 'Permissions updated',
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error updating permissions:', error);
+                }
             }
         },
     }),
