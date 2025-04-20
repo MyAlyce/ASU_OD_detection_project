@@ -140,29 +140,43 @@ export class GoogleApi {
 			'Sleep Deep Stage',
 		];
 
-		// Format each entry into its own array
+		// Format each entry into its own array, respecting permissions
 		const dataRows = data.map((entry) => {
 			const heartRateSummary = entry.heartRateSummary || {};
 			const sleepInfo = entry.sleepInfo || {};
 			const sleepStages = entry.sleepStageList || {};
-			return [
-				new Date(entry.recordTime * 1000).toISOString(),
-				entry.heartRateLast,
-				entry.heartRateResting,
-				heartRateSummary.maximum?.maximum || 0,
-				heartRateSummary.maximum?.time || 0,
-				heartRateSummary.maximum?.time_zone || 0,
-				heartRateSummary.maximum?.hr_value || 0,
-				sleepInfo.score || 0,
-				sleepInfo.startTime || 0,
-				sleepInfo.endTime || -1,
-				sleepInfo.deepTime || 0,
-				sleepInfo.totalTime || 0,
-				sleepStages.WAKE_STAGE || 0,
-				sleepStages.REM_STAGE || 0,
-				sleepStages.LIGHT_STAGE || 0,
-				sleepStages.DEEP_STAGE || 0,
-			];
+
+			// Create an array with the timestamp (always included)
+			const row = [new Date(entry.recordTime * 1000).toISOString()];
+
+			// Add heart rate data (or permission denied message if not permitted)
+			row.push(
+				entry.heartRateLast !== undefined ? entry.heartRateLast : 'Permission Denied: Heart Rate',
+				entry.heartRateResting !== undefined ? entry.heartRateResting : 'Permission Denied: Heart Rate',
+				heartRateSummary.maximum?.maximum !== undefined ? heartRateSummary.maximum?.maximum : 'Permission Denied: Heart Rate',
+				heartRateSummary.maximum?.time !== undefined ? heartRateSummary.maximum?.time : 'Permission Denied: Heart Rate',
+				heartRateSummary.maximum?.time_zone !== undefined ? heartRateSummary.maximum?.time_zone : 'Permission Denied: Heart Rate',
+				heartRateSummary.maximum?.hr_value !== undefined ? heartRateSummary.maximum?.hr_value : 'Permission Denied: Heart Rate'
+			);
+
+			// Add sleep info data (or permission denied message if not permitted)
+			row.push(
+				sleepInfo.score !== undefined ? sleepInfo.score : 'Permission Denied: Sleep Score',
+				sleepInfo.startTime !== undefined ? sleepInfo.startTime : 'Permission Denied: Start/End Time',
+				sleepInfo.endTime !== undefined ? sleepInfo.endTime : 'Permission Denied: Start/End Time',
+				sleepInfo.deepTime !== undefined ? sleepInfo.deepTime : 'Permission Denied: Deep Sleep Time',
+				sleepInfo.totalTime !== undefined ? sleepInfo.totalTime : 'Permission Denied: Total Sleep Time'
+			);
+
+			// Add sleep stage data (or permission denied message if not permitted)
+			row.push(
+				sleepStages.WAKE_STAGE !== undefined ? sleepStages.WAKE_STAGE : 'Permission Denied: Wake Stage',
+				sleepStages.REM_STAGE !== undefined ? sleepStages.REM_STAGE : 'Permission Denied: REM Stage',
+				sleepStages.LIGHT_STAGE !== undefined ? sleepStages.LIGHT_STAGE : 'Permission Denied: Light Stage',
+				sleepStages.DEEP_STAGE !== undefined ? sleepStages.DEEP_STAGE : 'Permission Denied: Deep Stage'
+			);
+
+			return row;
 		});
 
 		// Add headers to the data if requested
