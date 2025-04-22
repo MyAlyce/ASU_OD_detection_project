@@ -103,7 +103,15 @@ AppService(
 			if (permissions.heartRate) {
 				metrics.heartRateLast = heartRate.getLast();
 				metrics.heartRateResting = heartRate.getResting();
-				metrics.heartRateSummary = heartRate.getDailySummary();
+
+				// Get the daily summary and ensure it has the maximum property
+				const dailySummary = heartRate.getDailySummary();
+				metrics.heartRateSummary = dailySummary;
+
+				// Make sure the maximum property exists and has all required fields
+				if (!metrics.heartRateSummary.maximum) {
+					metrics.heartRateSummary.maximum = {};
+				}
 			}
 
 			// Get sleep info if any sleep permissions are enabled

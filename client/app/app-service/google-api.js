@@ -157,14 +157,17 @@ export class GoogleApi {
 			// Create an array with the timestamp (always included)
 			const row = [new Date(entry.recordTime * 1000).toISOString()];
 
+			// Check if heart rate permission is enabled
+			const hasHeartRatePermission = entry.heartRateLast !== undefined;
+
 			// Add heart rate data (or permission denied message if not permitted)
 			row.push(
-				entry.heartRateLast !== undefined ? entry.heartRateLast : 'Permission Denied: Heart Rate',
-				entry.heartRateResting !== undefined ? entry.heartRateResting : 'Permission Denied: Heart Rate',
-				heartRateSummary.maximum?.maximum !== undefined ? heartRateSummary.maximum?.maximum : 'Permission Denied: Heart Rate',
-				heartRateSummary.maximum?.time !== undefined ? heartRateSummary.maximum?.time : 'Permission Denied: Heart Rate',
-				heartRateSummary.maximum?.time_zone !== undefined ? heartRateSummary.maximum?.time_zone : 'Permission Denied: Heart Rate',
-				heartRateSummary.maximum?.hr_value !== undefined ? heartRateSummary.maximum?.hr_value : 'Permission Denied: Heart Rate'
+				hasHeartRatePermission ? entry.heartRateLast : 'Permission Denied: Heart Rate',
+				hasHeartRatePermission ? entry.heartRateResting : 'Permission Denied: Heart Rate',
+				hasHeartRatePermission ? (heartRateSummary.maximum?.maximum || 'N/A') : 'Permission Denied: Heart Rate',
+				hasHeartRatePermission ? (heartRateSummary.maximum?.time || 'N/A') : 'Permission Denied: Heart Rate',
+				hasHeartRatePermission ? (heartRateSummary.maximum?.time_zone || 'N/A') : 'Permission Denied: Heart Rate',
+				hasHeartRatePermission ? (heartRateSummary.maximum?.hr_value || 'N/A') : 'Permission Denied: Heart Rate'
 			);
 
 			// Add sleep info data (or permission denied message if not permitted)
