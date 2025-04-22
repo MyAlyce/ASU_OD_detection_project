@@ -66,4 +66,3 @@ export const RESUCE_PLAN_BUTTON = {
 	press_color: 0x487ff7,
 	text: 'Resuce Plan',
 };
-
