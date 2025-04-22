@@ -1,6 +1,6 @@
 import { useSettings } from '../context/SettingsContext';
 
-const tabs = ['Settings', 'Contacts', 'About', 'Rescue'];
+const tabs = ['Settings', 'Contacts', 'About', 'Rescue', 'Permissions'];
 
 /**
  * Create the tabs for the settings page

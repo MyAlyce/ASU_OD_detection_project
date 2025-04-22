@@ -148,28 +148,71 @@ export class GoogleApi {
 			'Sleep Deep Stage',
 		];
 
-		// Format each entry into its own array
+		// Format each entry into its own array, respecting permissions
 		const dataRows = data.map((entry) => {
 			const heartRateSummary = entry.heartRateSummary || {};
 			const sleepInfo = entry.sleepInfo || {};
 			const sleepStages = entry.sleepStageList || {};
+
+			// Check permissions
+			const hasHeartRatePermission = entry.heartRateLast !== undefined;
+			const hasSleepScorePermission = sleepInfo.score !== undefined;
+			const hasStartEndTimePermission = sleepInfo.startTime !== undefined;
+			const hasDeepSleepTimePermission = sleepInfo.deepTime !== undefined;
+			const hasTotalSleepTimePermission = sleepInfo.totalTime !== undefined;
+			const hasWakeStagePermission = sleepStages.WAKE_STAGE !== undefined;
+			const hasRemStagePermission = sleepStages.REM_STAGE !== undefined;
+			const hasLightStagePermission = sleepStages.LIGHT_STAGE !== undefined;
+			const hasDeepStagePermission = sleepStages.DEEP_STAGE !== undefined;
+
+			// Format in the same structure as main branch, but with permission checks
 			return [
 				new Date(entry.recordTime * 1000).toISOString(),
-				entry.heartRateLast,
-				entry.heartRateResting,
-				heartRateSummary.maximum?.maximum || 0,
-				heartRateSummary.maximum?.time || 0,
-				heartRateSummary.maximum?.time_zone || 0,
-				heartRateSummary.maximum?.hr_value || 0,
-				sleepInfo.score || 0,
-				sleepInfo.startTime || 0,
-				sleepInfo.endTime || -1,
-				sleepInfo.deepTime || 0,
-				sleepInfo.totalTime || 0,
-				sleepStages.WAKE_STAGE || 0,
-				sleepStages.REM_STAGE || 0,
-				sleepStages.LIGHT_STAGE || 0,
-				sleepStages.DEEP_STAGE || 0,
+				hasHeartRatePermission
+					? entry.heartRateLast
+					: 'Permission Denied: Heart Rate',
+				hasHeartRatePermission
+					? entry.heartRateResting
+					: 'Permission Denied: Heart Rate',
+				hasHeartRatePermission
+					? heartRateSummary.maximum?.maximum || 0
+					: 'Permission Denied: Heart Rate',
+				hasHeartRatePermission
+					? heartRateSummary.maximum?.time || 0
+					: 'Permission Denied: Heart Rate',
+				hasHeartRatePermission
+					? heartRateSummary.maximum?.time_zone || 0
+					: 'Permission Denied: Heart Rate',
+				hasHeartRatePermission
+					? heartRateSummary.maximum?.hr_value || 0
+					: 'Permission Denied: Heart Rate',
+				hasSleepScorePermission
+					? sleepInfo.score || 0
+					: 'Permission Denied: Sleep Score',
+				hasStartEndTimePermission
+					? sleepInfo.startTime || 0
+					: 'Permission Denied: Start/End Time',
+				hasStartEndTimePermission
+					? sleepInfo.endTime || -1
+					: 'Permission Denied: Start/End Time',
+				hasDeepSleepTimePermission
+					? sleepInfo.deepTime || 0
+					: 'Permission Denied: Deep Sleep Time',
+				hasTotalSleepTimePermission
+					? sleepInfo.totalTime || 0
+					: 'Permission Denied: Total Sleep Time',
+				hasWakeStagePermission
+					? sleepStages.WAKE_STAGE || 0
+					: 'Permission Denied: Wake Stage',
+				hasRemStagePermission
+					? sleepStages.REM_STAGE || 0
+					: 'Permission Denied: REM Stage',
+				hasLightStagePermission
+					? sleepStages.LIGHT_STAGE || 0
+					: 'Permission Denied: Light Stage',
+				hasDeepStagePermission
+					? sleepStages.DEEP_STAGE || 0
+					: 'Permission Denied: Deep Stage',
 			];
 		});
 

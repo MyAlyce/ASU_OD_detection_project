@@ -1,5 +1,6 @@
 import { ContactList } from './contactList';
 import { RescuePlan } from './rescue';
+import { Permissions } from './permissions';
 import {
 	createAuthView,
 	createShareEmailInput,
@@ -49,9 +50,22 @@ export const RescueTab = () => {
 	);
 };
 
+export const PermissionsTab = () => {
+	const store = useSettings();
+	if (!store.getAuthToken()) {
+		console.error('No access token found');
+		return Text({}, 'No access token found. Please sign in first.');
+	}
+	return View(
+		{ style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+		[Permissions()],
+	);
+};
+
 export const TAB_COMPONENTS = {
 	Settings: SettingsTab,
 	Contacts: ContactsTab,
 	About: AboutTab,
 	Rescue: RescueTab,
+	Permissions: PermissionsTab,
 };
