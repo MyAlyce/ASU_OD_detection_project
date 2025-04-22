@@ -9,19 +9,19 @@ AppSideService(
 			setInterval(() => {
 				try {
 					const syncRequest = this.request({
-						method: 'GET_SYNC_REQUEST'
+						method: 'GET_SYNC_REQUEST',
 					});
 
 					if (syncRequest && syncRequest.permissions) {
 						console.log('DEBUG: Found sync request in global storage');
 
-						Object.keys(syncRequest.permissions).forEach(key => {
+						Object.keys(syncRequest.permissions).forEach((key) => {
 							const value = syncRequest.permissions[key];
 							settingsLib.setItem(`toggle_${key}`, JSON.stringify(value));
 						});
 
 						this.call({
-							method: 'CLEAR_SYNC_REQUEST'
+							method: 'CLEAR_SYNC_REQUEST',
 						});
 					}
 				} catch (error) {
@@ -49,7 +49,6 @@ AppSideService(
 					refreshToken: parsedAuthData.refresh_token,
 					expiresAt: parsedAuthData.expires_at,
 				});
-
 			} else if (req.method === 'GET_FOLDER_ID') {
 				const folderId = settingsLib.getItem('zeppGoogleFolderId');
 				if (!folderId) {
@@ -57,14 +56,13 @@ AppSideService(
 					return;
 				}
 				res(null, { folderId });
-
 			} else if (req.method === 'SYNC_PERMISSIONS') {
 				console.log('DEBUG: SYNC_PERMISSIONS request received');
 				try {
 					const permissions = req.params.permissions;
 
 					if (permissions) {
-						Object.keys(permissions).forEach(key => {
+						Object.keys(permissions).forEach((key) => {
 							if (key !== 'timestamp') {
 								const value = permissions[key];
 								settingsLib.setItem(`toggle_${key}`, JSON.stringify(value));
@@ -75,15 +73,18 @@ AppSideService(
 							permissions.timestamp = new Date().getTime();
 						}
 
-						settingsLib.setItem('permissions_sync', JSON.stringify({
-							permissions,
-							timestamp: permissions.timestamp,
-							source: 'device',
-						}));
+						settingsLib.setItem(
+							'permissions_sync',
+							JSON.stringify({
+								permissions,
+								timestamp: permissions.timestamp,
+								source: 'device',
+							}),
+						);
 
 						this.call({
 							method: 'UPDATE_PERMISSIONS',
-							params: { permissions }
+							params: { permissions },
 						});
 
 						res(null, { success: true });
@@ -94,13 +95,12 @@ AppSideService(
 					console.error('Error syncing permissions:', error);
 					res(`Error: ${error.message}`);
 				}
-
 			} else if (req.method === 'GET_SETTINGS_PERMISSIONS') {
 				try {
 					const allSettings = settingsLib.getAll();
 					const permissionSettings = {};
 
-					Object.keys(allSettings).forEach(key => {
+					Object.keys(allSettings).forEach((key) => {
 						if (key.startsWith('toggle_')) {
 							const permKey = key.replace('toggle_', '');
 							try {
@@ -123,22 +123,23 @@ AppSideService(
 			console.log(`Method ==> ${req.method}`);
 
 			if (req.method === 'SET_TOKEN_SETTINGS') {
-				settingsLib.setItem('googleAuthData', JSON.stringify({
-					access_token: req.params.accessToken,
-					refresh_token: req.params.refreshToken,
-					expires_at: req.params.expiresAt,
-				}));
-				
+				settingsLib.setItem(
+					'googleAuthData',
+					JSON.stringify({
+						access_token: req.params.accessToken,
+						refresh_token: req.params.refreshToken,
+						expires_at: req.params.expiresAt,
+					}),
+				);
 			} else if (req.method === 'UPDATE_FOLDER_ID') {
 				settingsLib.setItem('zeppGoogleFolderId', req.params.folderId);
-
 			} else if (req.method === 'SYNC_SETTINGS_PERMISSIONS') {
 				try {
 					const permissions = req.params.permissions;
 					if (permissions) {
 						this.call({
 							method: 'UPDATE_PERMISSIONS',
-							params: { permissions }
+							params: { permissions },
 						});
 					}
 				} catch (error) {
@@ -162,20 +163,18 @@ AppSideService(
 						expiresAt: parsedValue.expires_at,
 					},
 				});
-				
 			} else if (key === 'permissions_sync' && newValue) {
 				try {
 					const syncData = JSON.parse(newValue);
 					if (syncData && syncData.permissions) {
 						this.call({
 							method: 'UPDATE_PERMISSIONS',
-							params: { permissions: syncData.permissions }
+							params: { permissions: syncData.permissions },
 						});
 					}
 				} catch (error) {
 					console.error('Error handling permission sync:', error);
 				}
-
 			} else if (key.startsWith('toggle_')) {
 				try {
 					const permKey = key.replace('toggle_', '');
@@ -186,7 +185,7 @@ AppSideService(
 					const allSettings = settingsLib.getAll();
 					const permissionSettings = {};
 
-					Object.keys(allSettings).forEach(k => {
+					Object.keys(allSettings).forEach((k) => {
 						if (k.startsWith('toggle_')) {
 							const shortKey = k.replace('toggle_', '');
 							try {
@@ -199,7 +198,7 @@ AppSideService(
 
 					this.call({
 						method: 'UPDATE_PERMISSIONS',
-						params: { permissions: permissionSettings }
+						params: { permissions: permissionSettings },
 					});
 				} catch (error) {
 					console.error('Error updating device permissions:', error);

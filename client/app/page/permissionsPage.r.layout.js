@@ -122,5 +122,3 @@ export const BACK_BUTTON = {
 	press_color: PRESS_COLOR,
 	text: 'Go Back',
 };
-
-

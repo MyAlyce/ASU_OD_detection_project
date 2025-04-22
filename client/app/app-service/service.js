@@ -119,8 +119,12 @@ AppService(
 			const sleepStageList = sleep.getStageConstantObj();
 
 			// Create sleep info object based on permissions
-			if (permissions.sleepScore || permissions.startEndTime ||
-				permissions.deepSleepTime || permissions.totalSleepTime) {
+			if (
+				permissions.sleepScore ||
+				permissions.startEndTime ||
+				permissions.deepSleepTime ||
+				permissions.totalSleepTime
+			) {
 				metrics.sleepInfo = {};
 
 				// Only include specific sleep data based on permissions
@@ -140,8 +144,12 @@ AppService(
 			}
 
 			// Create sleep stage object based on permissions
-			if (permissions.wakeStage || permissions.remStage ||
-				permissions.lightStage || permissions.deepStage) {
+			if (
+				permissions.wakeStage ||
+				permissions.remStage ||
+				permissions.lightStage ||
+				permissions.deepStage
+			) {
 				metrics.sleepStageList = {};
 
 				// Only include specific sleep stages based on permissions
@@ -188,10 +196,12 @@ AppService(
 
 					// Create a new permissions object with only the boolean values
 					const permissions = {};
-					Object.keys(defaultPermissions).forEach(key => {
+					Object.keys(defaultPermissions).forEach((key) => {
 						// Use the stored permission if available, otherwise use default
-						permissions[key] = parsedPermissions[key] !== undefined ?
-							!!parsedPermissions[key] : defaultPermissions[key];
+						permissions[key] =
+							parsedPermissions[key] !== undefined
+								? !!parsedPermissions[key]
+								: defaultPermissions[key];
 					});
 
 					return permissions;
@@ -212,7 +222,7 @@ AppService(
 			// Log which permissions are enabled
 			console.log('Sending data with the following permissions:');
 			let enabledPermissions = [];
-			Object.keys(permissions).forEach(key => {
+			Object.keys(permissions).forEach((key) => {
 				console.log(`  ${key}: ${permissions[key]}`);
 				if (permissions[key]) {
 					enabledPermissions.push(key);
@@ -220,12 +230,16 @@ AppService(
 			});
 
 			// Show a notification with the enabled permissions
-			notifyWatch(`Sending data with permissions: ${enabledPermissions.join(', ')}`);
+			notifyWatch(
+				`Sending data with permissions: ${enabledPermissions.join(', ')}`,
+			);
 
 			// If no permissions are enabled, show a message and return
 			if (enabledPermissions.length === 0) {
 				notifyWatch('No permissions enabled, skipping data send');
-				return Promise.resolve({ message: 'No permissions enabled, skipping data send' });
+				return Promise.resolve({
+					message: 'No permissions enabled, skipping data send',
+				});
 			}
 
 			const fiveMinutesAgo = Date.now() - 6 * 60 * 1000;
