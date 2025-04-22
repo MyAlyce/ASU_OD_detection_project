@@ -196,50 +196,50 @@ Page(
 						// Log the parsed permissions object
 						console.log('Parsed permissions:', permissions);
 
-                        // Check the heart rate permission
-                        if (permissions) {
-                            console.log('Made it passed If Permissions bit');
+						// Check the heart rate permission
+						if (permissions) {
+							console.log('Made it passed If Permissions bit');
 
 							Object.entries(permissions).forEach(([key, value]) => {
 								console.log('The key is: ', key);
 
-                                if (key === 'heartRate') {
-                                    console.log(`Current heart rate permission: ${value}`);
+								if (key === 'heartRate') {
+									console.log(`Current heart rate permission: ${value}`);
 
-                                    if (value === true) {
-                                        console.log('Heart rate permission is granted.');
-                                        push({
-                                            url: 'page/rescuePlan',
-                                            params: jsonstringPermissions,  // Pass the updated permissions
-                                        });
-                                    } else {
-                                        console.log('Heart rate permission not granted.');
-                                        notificationMgr.notify({
-                                            title: "Permission Required",
-                                            content: "You need to enable heart permissions to continue. Do you wish to enable it?",
-                                            actions: [
-                                                {
-                                                    text: "Yes",
-                                                    file: "page/permissionsPage", // Navigate to permissions page
-                                                },
-                                                {
-                                                    text: "No",
-                                                    file: "page/index", // Go back to index page
-                                                },
-                                            ],
-                                            vibrate: 6, // Custom vibration for alert
-                                        });
-                                    }
-                                }
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Error parsing global permissions:', error);
-                    }
-                },
-            });
-
-        },
+									if (value === true) {
+										console.log('Heart rate permission is granted.');
+										push({
+											url: 'page/rescuePlan',
+											params: jsonstringPermissions, // Pass the updated permissions
+										});
+									} else {
+										console.log('Heart rate permission not granted.');
+										notificationMgr.notify({
+											title: 'Permission Required',
+											content:
+												'You need to enable heart permissions to continue. Do you wish to enable it?',
+											actions: [
+												{
+													text: 'Yes',
+													file: 'page/permissionsPage', // Navigate to permissions page
+												},
+												{
+													text: 'No',
+													file: 'page/index', // Go back to index page
+												},
+											],
+											vibrate: 6, // Custom vibration for alert
+										});
+									}
+								}
+							});
+						}
+					} catch (error) {
+						console.error('Error parsing global permissions:', error);
+					}
+				},
+			});
+		},
 
 		onDestroy() {
 			console.log('page onDestroy invoked');

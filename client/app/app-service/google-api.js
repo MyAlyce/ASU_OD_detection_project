@@ -20,6 +20,14 @@ export class GoogleApi {
 	setFolderId(folderId) {
 		storage.setKey('zeppGoogleFolderId', folderId);
 		this.folderId = folderId;
+
+		// Notify the app-side to update this for settings context
+		this.svc.call({
+			method: 'UPDATE_FOLDER_ID',
+			params: {
+				folderId: folderId,
+			},
+		});
 	}
 
 	getFolderId() {
@@ -36,10 +44,10 @@ export class GoogleApi {
 	}
 
 	// Check if the Google Drive folder exists, if not, create it
-	checkOrCreateFolder(folderName = 'test') {
+	checkOrCreateFolder(folderName) {
 		notifyWatch('Checking for Google Drive folder in google-api.js...');
 
-		if (this.getfolderId()) {
+		if (this.getFolderId()) {
 			notifyWatch(
 				'Promise Resolved: In g-api.js, verified that a folder already exists',
 			);
@@ -72,13 +80,13 @@ export class GoogleApi {
 	createNewSheet(newDay = false) {
 		notifyWatch('Calling createNewSheet() in google-api.js...');
 
-		if (!this.getfolderId()) {
+		if (!this.getFolderId()) {
 			notifyWatch('Promise Rejected: No folder ID found in g-api.js');
 
 			return Promise.reject('No folder ID found');
 		}
 
-		const folderId = this.getfolderId();
+		const folderId = this.getFolderId();
 
 		if (this.getSheetId() && !newDay) {
 			notifyWatch('Promise Resolved: Sheet already exists for the current day');
@@ -321,7 +329,7 @@ export class GoogleApi {
 	 * @param {string} folderName - The name of the new folder to create.
 	 * @returns {Promise<object>} - The response from the Google Drive API with the created folder's details
 	 */
-	createNewGoogleDriveFolder(folderName = 'test') {
+	createNewGoogleDriveFolder(folderName) {
 		return this.svc
 			.httpRequest({
 				method: 'POST',
@@ -467,7 +475,7 @@ export class GoogleApi {
 	 * @param {string} folderName - The name of the new folder to create.
 	 * @returns {Promise<object>} - The response from the Google Drive API with the created folder's details
 	 */
-	createNewGoogleDriveFolder(folderName = 'test') {
+	createNewGoogleDriveFolder(folderName) {
 		return this.svc
 			.httpRequest({
 				method: 'POST',

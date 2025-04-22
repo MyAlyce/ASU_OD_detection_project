@@ -4,6 +4,17 @@ import {
 	GOOGLE_API_REDIRECT_URI,
 } from '../../google-api-constants';
 
+import { useSettings } from '../context/SettingsContext';
+
+/**
+ * Request folder ID from settings context for sharing
+ * @returns folder ID from settings
+ */
+export const getFolderIdFromSettings = () => {
+	const settings = useSettings();
+	return settings.getFolderId();
+};
+
 /**
  * Request Google Auth Data from Google API after receiving auth code
  * @param authResponse the auth code from Google API
@@ -35,7 +46,12 @@ export const requestGoogleAuthData = async (authResponse) => {
 };
 
 export const shareFilesWithEmail = async (address, accessToken) => {
-	const fileId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // todo remove hardcode, share with folder
+	//const folderId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // todo remove hardcode, share with folder
+	const folderId = getFolderIdFromSettings(); // Use the folder ID from settings
+	if (!folderId) {
+		return { success: false, error: 'No folder ID found' };
+	}
+
 	const body = JSON.stringify({
 		role: 'reader',
 		type: 'user',
@@ -44,7 +60,7 @@ export const shareFilesWithEmail = async (address, accessToken) => {
 
 	try {
 		const response = await fetch(
-			`https://www.googleapis.com/drive/v2/files/${fileId}/permissions`,
+			`https://www.googleapis.com/drive/v2/files/${folderId}/permissions`,
 			{
 				method: 'POST',
 				body,
@@ -65,10 +81,14 @@ export const shareFilesWithEmail = async (address, accessToken) => {
 };
 
 export const removeFilePermissionById = async (permissionId, accessToken) => {
-	const fileId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // TODO: Remove hardcoding
+	//const folderId = '1e40yZOhM5_Wd5IQkwVJpPh23pohGgRiN3Ayp4fxYtzU'; // TODO: Remove hardcoding
+	const folderId = getFolderIdFromSettings(); // Use the folder ID from settings
+	if (!folderId) {
+		return { success: false, error: 'No folder ID found' };
+	}
 
 	const response = await fetch(
-		`https://www.googleapis.com/drive/v2/files/${fileId}/permissions/${permissionId}`,
+		`https://www.googleapis.com/drive/v2/files/${folderId}/permissions/${permissionId}`,
 		{
 			method: 'DELETE',
 			headers: {

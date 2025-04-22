@@ -28,6 +28,14 @@ export const createSettingsStore = ({
 			const authData = JSON.parse(settingsStore.getItem('googleAuthData'));
 			return authData?.email;
 		},
+		//--------------------------------------------------------------------
+		getFolderId: () => {
+			return settingsStore.getItem('zeppGoogleFolderId') || null;
+		},
+		setFolderId: (folderId) => {
+			settingsStore.setItem('zeppGoogleFolderId', folderId);
+		},
+		//--------------------------------------------------------------------
 	};
 	globalSettingsStore = store;
 	return store;
