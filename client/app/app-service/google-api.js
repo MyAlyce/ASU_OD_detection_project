@@ -154,40 +154,36 @@ export class GoogleApi {
 			const sleepInfo = entry.sleepInfo || {};
 			const sleepStages = entry.sleepStageList || {};
 
-			// Create an array with the timestamp (always included)
-			const row = [new Date(entry.recordTime * 1000).toISOString()];
-
-			// Check if heart rate permission is enabled
+			// Check permissions
 			const hasHeartRatePermission = entry.heartRateLast !== undefined;
+			const hasSleepScorePermission = sleepInfo.score !== undefined;
+			const hasStartEndTimePermission = sleepInfo.startTime !== undefined;
+			const hasDeepSleepTimePermission = sleepInfo.deepTime !== undefined;
+			const hasTotalSleepTimePermission = sleepInfo.totalTime !== undefined;
+			const hasWakeStagePermission = sleepStages.WAKE_STAGE !== undefined;
+			const hasRemStagePermission = sleepStages.REM_STAGE !== undefined;
+			const hasLightStagePermission = sleepStages.LIGHT_STAGE !== undefined;
+			const hasDeepStagePermission = sleepStages.DEEP_STAGE !== undefined;
 
-			// Add heart rate data (or permission denied message if not permitted)
-			row.push(
+			// Format in the same structure as main branch, but with permission checks
+			return [
+				new Date(entry.recordTime * 1000).toISOString(),
 				hasHeartRatePermission ? entry.heartRateLast : 'Permission Denied: Heart Rate',
 				hasHeartRatePermission ? entry.heartRateResting : 'Permission Denied: Heart Rate',
-				hasHeartRatePermission ? (heartRateSummary.maximum?.maximum || 'N/A') : 'Permission Denied: Heart Rate',
-				hasHeartRatePermission ? (heartRateSummary.maximum?.time || 'N/A') : 'Permission Denied: Heart Rate',
-				hasHeartRatePermission ? (heartRateSummary.maximum?.time_zone || 'N/A') : 'Permission Denied: Heart Rate',
-				hasHeartRatePermission ? (heartRateSummary.maximum?.hr_value || 'N/A') : 'Permission Denied: Heart Rate'
-			);
-
-			// Add sleep info data (or permission denied message if not permitted)
-			row.push(
-				sleepInfo.score !== undefined ? sleepInfo.score : 'Permission Denied: Sleep Score',
-				sleepInfo.startTime !== undefined ? sleepInfo.startTime : 'Permission Denied: Start/End Time',
-				sleepInfo.endTime !== undefined ? sleepInfo.endTime : 'Permission Denied: Start/End Time',
-				sleepInfo.deepTime !== undefined ? sleepInfo.deepTime : 'Permission Denied: Deep Sleep Time',
-				sleepInfo.totalTime !== undefined ? sleepInfo.totalTime : 'Permission Denied: Total Sleep Time'
-			);
-
-			// Add sleep stage data (or permission denied message if not permitted)
-			row.push(
-				sleepStages.WAKE_STAGE !== undefined ? sleepStages.WAKE_STAGE : 'Permission Denied: Wake Stage',
-				sleepStages.REM_STAGE !== undefined ? sleepStages.REM_STAGE : 'Permission Denied: REM Stage',
-				sleepStages.LIGHT_STAGE !== undefined ? sleepStages.LIGHT_STAGE : 'Permission Denied: Light Stage',
-				sleepStages.DEEP_STAGE !== undefined ? sleepStages.DEEP_STAGE : 'Permission Denied: Deep Stage'
-			);
-
-			return row;
+				hasHeartRatePermission ? (heartRateSummary.maximum?.maximum || 0) : 'Permission Denied: Heart Rate',
+				hasHeartRatePermission ? (heartRateSummary.maximum?.time || 0) : 'Permission Denied: Heart Rate',
+				hasHeartRatePermission ? (heartRateSummary.maximum?.time_zone || 0) : 'Permission Denied: Heart Rate',
+				hasHeartRatePermission ? (heartRateSummary.maximum?.hr_value || 0) : 'Permission Denied: Heart Rate',
+				hasSleepScorePermission ? (sleepInfo.score || 0) : 'Permission Denied: Sleep Score',
+				hasStartEndTimePermission ? (sleepInfo.startTime || 0) : 'Permission Denied: Start/End Time',
+				hasStartEndTimePermission ? (sleepInfo.endTime || -1) : 'Permission Denied: Start/End Time',
+				hasDeepSleepTimePermission ? (sleepInfo.deepTime || 0) : 'Permission Denied: Deep Sleep Time',
+				hasTotalSleepTimePermission ? (sleepInfo.totalTime || 0) : 'Permission Denied: Total Sleep Time',
+				hasWakeStagePermission ? (sleepStages.WAKE_STAGE || 0) : 'Permission Denied: Wake Stage',
+				hasRemStagePermission ? (sleepStages.REM_STAGE || 0) : 'Permission Denied: REM Stage',
+				hasLightStagePermission ? (sleepStages.LIGHT_STAGE || 0) : 'Permission Denied: Light Stage',
+				hasDeepStagePermission ? (sleepStages.DEEP_STAGE || 0) : 'Permission Denied: Deep Stage',
+			];
 		});
 
 		// Add headers to the data if requested
